@@ -311,7 +311,11 @@ int msh_neighborsQ2(Mesh *Msh)
           jVer2 = Msh->Tri[jTri][ tri2edg[jEdg][1] ];
           
           // TODO: compare the 4 points 
+          if ((iVer1 == iVer2 && jVer1 == jVer2) || (iVer1 == jVer2 && iVer2 == jVer1)) {
           //       set the neighbors Msh->TriVoi if both edges match
+          Msh->TriVoi[iTri][iEdg] = jTri;
+          Msh->TriVoi[jTri][jEdg] = iTri;
+          }
         }
       }
       
