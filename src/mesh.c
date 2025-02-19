@@ -355,8 +355,31 @@ int msh_neighbors(Mesh *Msh)
   return 1;
 }   
 
+int msh_quality(Mesh *Msh, double *Qal, int mode)
+{
+  double alpha1 = 4.0/sqrt(3.0); double alpha2 = 6.0/sqrt(3.0);
+  double l1, l2, l3, area;
 
+  for (int iTri=1; iTri<=Msh->NbrTri; iTri++) {
+    int iVer0 = Msh->Tri[iTri][0]; int iVer1 = Msh->Tri[iTri][1]; int iVer2 = Msh->Tri[iTri][2];
+    double x0 = Msh->Crd[iVer0][0]; double y0 = Msh->Crd[iVer0][1];
+    double x1 = Msh->Crd[iVer1][0]; double y1 = Msh->Crd[iVer1][1];
+    double x2 = Msh->Crd[iVer2][0]; double y2 = Msh->Crd[iVer2][1];
+    
+    l1 = distance(x0, y0, x1, y1); l2 = distance(x1, y1, x2, y2); l3 = distance(x2, y2, x0, y0);
+    area = triArea(x0, y0, x1, y1, x2, y2); 
 
+    if (mode == 1){
+      Qal[iTri] = alpha1 * (pow(l1,2) + pow(l2,2) + pow(l3,2)) / area;
+    }
+    else if (mode == 2){
+      double rho = 2.0 * area / (l1 + l2 + l3);
+      Qal[iTri] = alpha2 * fmax(fmax(l1, l2), l3) / rho;
+    }
+  } 
+
+ return 0;
+}
 
 
 HashTable * hash_init(int SizHead, int NbrMaxObj)
@@ -484,6 +507,14 @@ int msh_write2dmetric(char *file, int nmetric, double3d *metric)
   return 1;
 }
 
+double distance(double x1, double y1, double x2, double y2)
+{
+    return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
+}
 
+double triArea(double x0, double y0, double x1, double y1, double x2, double y2)
+{
+    return 0.5 * ((x1 - x0)*(y2 - y0) - (x2 - x0)*(y1 - y0));
+}
 
 

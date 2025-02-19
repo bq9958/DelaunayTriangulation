@@ -38,14 +38,15 @@ int main(int argc, char *argv[])
   
   
   //--- TODO: compute mesh quality
-  double  *Qal = (double  *)malloc(sizeof(double ) * (Msh->NbrTri+1));
-  
-  for (iTri=1; iTri<=Msh->NbrTri; iTri++) {
-  	 Qal[iTri] = (double)iTri / 10.;
-  } 
-  
-  msh_write2dfield_Triangles("quality.solb", Msh->NbrTri, Qal);
+  double  *Qal1 = (double  *)malloc(sizeof(double ) * (Msh->NbrTri+1));
+  double  *Qal2 = (double  *)malloc(sizeof(double ) * (Msh->NbrTri+1));
 
+  msh_quality(Msh, Qal1, 1);
+  msh_quality(Msh, Qal2, 2);
+  
+  msh_write2dfield_Triangles("quality1.solb", Msh->NbrTri, Qal1);
+  msh_write2dfield_Triangles("quality2.solb", Msh->NbrTri, Qal2);
+  printf("  quality written in quality.solb \n");
   
   //--- TODO: compute metric field
   double3d *Met = (double3d *)malloc(sizeof(double3d) * (Msh->NbrVer+1));
@@ -57,6 +58,7 @@ int main(int argc, char *argv[])
   } 
   
   msh_write2dmetric("metric.solb", Msh->NbrVer, Met);
+  printf("  metric written in metric.solb \n");
   	
   	
   return 0;

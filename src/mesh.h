@@ -84,7 +84,7 @@ double * sol_read(char *file, int mshDim, int mshNbrSol);
 int    msh_boundingbox(Mesh *Msh);         // compute the bouding box of the mesh            
 int    msh_neighbors(Mesh *Msh);           // build TriVoi with a hash table                 
 int    msh_neighborsQ2(Mesh *Msh);         // build TriVoi with the naive quadratic approach 
-  
+int    msh_quality(Mesh *Msh, double *Qal, int mode); // compute the quality of the mesh triangles
 
 
 //--- A provided simple hash table data structure 
@@ -110,6 +110,9 @@ int hash_find(HashTable *hsh, int iVer1, int iVer2);            // return the id
 int hash_add (HashTable *hsh, int iVer1, int iVer2, int iTri);  // ==> add this entry in the hash tab 
 int hash_suppr(HashTable *hsh, int iVer1, int iVer2, int iTri);  // ==> suppress this entry in the hash tab 
 
+//--- Tool functions
+double distance(double x1, double y1, double x2, double y2);
+double triArea(double x0, double y0, double x1, double y1, double x2, double y2);
 
 
 //--- Fonction used for adaptation 
