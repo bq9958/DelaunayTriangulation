@@ -107,12 +107,15 @@ typedef struct hash_table
 HashTable * hash_init(int SizHead, int NbrMaxObj);          // alloc and set htable ==> allocate Head, LstObj 
 
 int hash_find(HashTable *hsh, int iVer1, int iVer2);            // return the id found (in LstObj ), if 0 the object is not in the list 
-int hash_add (HashTable *hsh, int iVer1, int iVer2, int iTri);  // ==> add this entry in the hash tab 
+int hash_add (HashTable *hsh, int iVer1, int iVer2, int iTri, int iEdg);  // ==> add this entry in the hash tab 
 int hash_suppr(HashTable *hsh, int iVer1, int iVer2, int iTri);  // ==> suppress this entry in the hash tab 
+
 
 //--- Tool functions
 double distance(double x1, double y1, double x2, double y2);
 double triArea(double x0, double y0, double x1, double y1, double x2, double y2);
+void   write_TriVoi_to_file(char *file, Mesh *Msh);
+void   write_Head_to_file(char *file, HashTable *hsh);
 
 
 //--- Fonction used for adaptation 

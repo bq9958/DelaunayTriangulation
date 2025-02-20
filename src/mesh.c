@@ -321,7 +321,12 @@ int msh_neighborsQ2(Mesh *Msh)
       
     }
   }
+
+  write_TriVoi_to_file("TriVoi_Q2.txt", Msh);
   
+  free(Msh->TriVoi);
+  Msh->TriVoi = NULL; 
+
   return 1;
 }   
 
@@ -336,11 +341,9 @@ int msh_neighbors(Mesh *Msh)
   if ( Msh->TriVoi == NULL )
     Msh->TriVoi = calloc( (Msh->NbrTri+1), sizeof(int3d) );  
   
-  
   //--- initialize HashTable and set the hash table 
-  
-  // TODO
-  
+  int NbrMaxObj = 3 * Msh->NbrTri + 1; int SizHead = 0.8 * NbrMaxObj;
+  HashTable *hsh = hash_init(SizHead, NbrMaxObj);
   
   //--- Compute the neighbors using the hash table
   for (iTri=1; iTri<=Msh->NbrTri; iTri++) {
@@ -353,9 +356,27 @@ int msh_neighbors(Mesh *Msh)
       // do we have objects as that key   hash_find () */
       //  if yes ===> look among objects and potentially update TriVoi */
       //  if no  ===> add to hash table   hash_add()   */
+      int id = hash_find(hsh, iVer1, iVer2);
+      if (id != 0) {
+        Msh->TriVoi[hsh->LstObj[id][2]][hsh->LstObj[id][3]] = iTri;
+        hsh->LstObj[id][3] = iTri;
+        Msh->TriVoi[iTri][iEdg] = hsh->LstObj[id][2];
+      }
+      else {
+        hash_add(hsh, iVer1, iVer2, iTri, iEdg);
+      }
     }
   }
-  
+
+  write_TriVoi_to_file("TriVoi_Hash.txt", Msh);
+  write_Head_to_file("Head.txt", hsh);
+
+  free(hsh->Head);
+  free(hsh->LstObj);
+  free(hsh);
+  free(Msh->TriVoi);
+  Msh->TriVoi = NULL;
+
   return 1;
 }   
 
@@ -387,18 +408,37 @@ int msh_quality(Mesh *Msh, double *Qal, int mode)
 
 
 HashTable * hash_init(int SizHead, int NbrMaxObj)
-{
-	HashTable *hsh = NULL;
-	
+{	
 	// to be implemented
 
 	// allocate hash table
-	
+	HashTable *hsh = (HashTable *)malloc(sizeof(HashTable));
+  if (!hsh) {
+    printf("Error: Failed to initialize HashTable\n");
+    return NULL;
+  }
+
 	// initialize hash table
-	
-	// allocate Head, LstObj
-	
-	
+	hsh->SizHead = SizHead; 
+  hsh->NbrMaxObj = NbrMaxObj;
+  hsh->NbrObj = 0;
+
+  // allocate Head, LstObj
+	hsh->Head = (int *)calloc(SizHead, sizeof(int));
+  if (!hsh->Head) {
+    printf("Error: Failed to allocate hsh->Head\n");
+    free(hsh);
+    return NULL;
+  }
+
+  hsh->LstObj = (int5d *)calloc(NbrMaxObj, sizeof(int5d));
+  if (!hsh->LstObj) {
+    printf("Error: Failed to allocate hsh->LstObj\n");
+    free(hsh->Head);
+    free(hsh);
+    return NULL;
+  }
+
   return hsh;
 }
 
@@ -409,18 +449,39 @@ int hash_find(HashTable *hsh, int iVer1, int iVer2)
 	// to be implemented
 	
 	// return the id found (in LstObj ), if 0 the object is not in the list
-	
+
+  int key = iVer1 + iVer2;
+  int id = hsh->Head[key%(hsh->SizHead)];
+  while (id != 0) {
+    if ((hsh->LstObj[id][0] == iVer1 && hsh->LstObj[id][1] == iVer2) \
+      || (hsh->LstObj[id][0] == iVer2 && hsh->LstObj[id][1] == iVer1)) 
+    {
+      return id;
+    }
+    id = hsh->LstObj[id][4];
+  }
+
 	return 0;
 }
 
 
-int hash_add(HashTable *hsh, int iVer1, int iVer2, int iTri)
+int hash_add(HashTable *hsh, int iVer1, int iVer2, int iTri, int iEdg)
 {
 
   // to be implemented
 	
   // ===> add this entry in the hash tab 
-	
+  int key = iVer1 + iVer2;
+  int newId = hsh->NbrObj + 1;   // global id starts from 1
+  hsh->NbrObj++;
+
+  hsh->LstObj[newId][0] = iVer1;
+  hsh->LstObj[newId][1] = iVer2;
+  hsh->LstObj[newId][2] = iTri;
+  hsh->LstObj[newId][3] = iEdg;
+  hsh->LstObj[newId][4] = hsh->Head[key%(hsh->SizHead)];
+  hsh->Head[key%(hsh->SizHead)] = newId;
+
 	return 0;
 }
 
@@ -521,4 +582,37 @@ double triArea(double x0, double y0, double x1, double y1, double x2, double y2)
     return 0.5 * ((x1 - x0)*(y2 - y0) - (x2 - x0)*(y1 - y0));
 }
 
+void write_TriVoi_to_file(char *file, Mesh *Msh)
+{
+  int iTri, iEdg;
+  
+  FILE *fp = fopen(file, "w");
+  
+  for (iTri=1; iTri<=Msh->NbrTri; iTri++) {
+    fprintf(fp, "Triangle %d : ", iTri);
+    for (iEdg=0; iEdg<3; iEdg++) {
+      fprintf(fp, "%d ", Msh->TriVoi[iTri][iEdg]);
+    }
+    fprintf(fp, "\n");
+  }
+  
+  fclose(fp);
+  
+  return;
+}
+
+void write_Head_to_file(char *file, HashTable *hsh)
+{
+  int i;
+  
+  FILE *fp = fopen(file, "w");
+  
+  for (i=0; i<hsh->SizHead; i++) {
+    fprintf(fp, "Head[%d] = %d \n", i, hsh->Head[i]);
+  }
+  
+  fclose(fp);
+  
+  return;
+}
 
