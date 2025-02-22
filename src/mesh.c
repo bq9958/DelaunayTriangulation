@@ -298,9 +298,22 @@ int msh_neighborsQ2(Mesh *Msh)
   //--- Compute the neighbors using a quadratic-complexity algorithm 
   for (iTri=1; iTri<=Msh->NbrTri; iTri++) {
     for (iEdg=0; iEdg<3; iEdg++) {
+      int bool_Efr = 0;
       iVer1 = Msh->Tri[iTri][ tri2edg[iEdg][0] ];
       iVer2 = Msh->Tri[iTri][ tri2edg[iEdg][1] ];
 			
+      if (Msh->Efr != NULL){
+        for (int iEfr=1; iEfr<=Msh->NbrEfr; iEfr++){
+          if ((Msh->Efr[iEfr][0] == iVer1 && Msh->Efr[iEfr][1] == iVer2) \
+           || (Msh->Efr[iEfr][0] == iVer2 && Msh->Efr[iEfr][1] == iVer1)){
+            Msh->TriVoi[iTri][iEdg] = 0;
+            bool_Efr = 1;
+          }
+        }
+      }
+
+      if (bool_Efr == 1) continue;
+
       //--- find the Tri different from iTri that has iVer1, iVer2 as vertices 
       for (jTri=1; jTri<=Msh->NbrTri; jTri++) {
         if ( iTri == jTri ) 
@@ -318,14 +331,11 @@ int msh_neighborsQ2(Mesh *Msh)
           }
         }
       }
-      
     }
   }
 
-  write_TriVoi_to_file("TriVoi_Q2.txt", Msh);
-  
-  free(Msh->TriVoi);
-  Msh->TriVoi = NULL; 
+  //free(Msh->TriVoi);
+  //Msh->TriVoi = NULL; 
 
   return 1;
 }   
@@ -348,8 +358,21 @@ int msh_neighbors(Mesh *Msh)
   //--- Compute the neighbors using the hash table
   for (iTri=1; iTri<=Msh->NbrTri; iTri++) {
     for (iEdg=0; iEdg<3; iEdg++) {
+      int bool_Efr = 0;
       iVer1 = Msh->Tri[iTri][ tri2edg[iEdg][0] ];
       iVer2 = Msh->Tri[iTri][ tri2edg[iEdg][1] ];
+
+      if (Msh->Efr != NULL){
+        for (int iEfr=1; iEfr<=Msh->NbrEfr; iEfr++){
+          if ((Msh->Efr[iEfr][0] == iVer1 && Msh->Efr[iEfr][1] == iVer2) \
+           || (Msh->Efr[iEfr][0] == iVer2 && Msh->Efr[iEfr][1] == iVer1)){
+            Msh->TriVoi[iTri][iEdg] = 0;
+            bool_Efr = 1;
+          }
+        }
+      }
+
+      if (bool_Efr == 1) continue;
 
       // TODO:
       // compute the key : iVer1+iVer2   
@@ -368,14 +391,13 @@ int msh_neighbors(Mesh *Msh)
     }
   }
 
-  write_TriVoi_to_file("TriVoi_Hash.txt", Msh);
-  write_Head_to_file("Head.txt", hsh);
+  printf("  Edges hash %10d \n", hsh->NbrObj);
 
-  free(hsh->Head);
-  free(hsh->LstObj);
-  free(hsh);
-  free(Msh->TriVoi);
-  Msh->TriVoi = NULL;
+  //free(hsh->Head);
+  //free(hsh->LstObj);
+  //free(hsh);
+  //free(Msh->TriVoi);
+  //Msh->TriVoi = NULL;
 
   return 1;
 }   
@@ -584,13 +606,12 @@ double triArea(double x0, double y0, double x1, double y1, double x2, double y2)
 
 void write_TriVoi_to_file(char *file, Mesh *Msh)
 {
-  int iTri, iEdg;
   
   FILE *fp = fopen(file, "w");
   
-  for (iTri=1; iTri<=Msh->NbrTri; iTri++) {
+  for (int iTri=1; iTri<=Msh->NbrTri; iTri++) {
     fprintf(fp, "Triangle %d : ", iTri);
-    for (iEdg=0; iEdg<3; iEdg++) {
+    for (int iEdg=0; iEdg<3; iEdg++) {
       fprintf(fp, "%d ", Msh->TriVoi[iTri][iEdg]);
     }
     fprintf(fp, "\n");
@@ -616,3 +637,121 @@ void write_Head_to_file(char *file, HashTable *hsh)
   return;
 }
 
+int compute_NbrEdgBoudry(Mesh *Msh)
+{
+  int NbrEdg = 0;
+  
+  for (int iTri=1; iTri<=Msh->NbrTri; iTri++) {
+    for (int iEdg=0; iEdg<3; iEdg++) {
+      if (Msh->TriVoi[iTri][iEdg] == 0) {
+        NbrEdg++;
+      }
+    }
+  }
+  
+  return NbrEdg;
+}
+
+void find_connex_components(Mesh *Msh)
+{
+  int *color = (int *)calloc(Msh->NbrTri+1, sizeof(int));
+  int *stack = (int *)malloc((Msh->NbrTri+1) * sizeof(int));
+  int ndomn = 0;
+  int top;
+
+  for (int iTri=1; iTri <= Msh->NbrTri; iTri++){
+    if (color[iTri] == 0){
+      ndomn++;
+      printf("  ndomn = %d\n", ndomn);
+      color[iTri] = ndomn;
+
+      top = 0;
+      stack[top++] = iTri;
+
+      while (top > 0){
+        int topTri = stack[--top];
+
+        for (int iEdg=0; iEdg<3; iEdg++){
+          int neighbor = Msh->TriVoi[topTri][iEdg];
+          if (neighbor != 0 && color[neighbor] == 0){
+            color[neighbor] = ndomn;
+            stack[top++] = neighbor;
+          }
+        }
+      }
+    }
+  }
+
+  int *NbrConnex = (int *)calloc(ndomn+1, sizeof(int));
+  for (int iTri=1; iTri <= Msh->NbrTri; iTri++){
+    NbrConnex[color[iTri]]++;
+  }
+
+  double *colorDouble = convertIntToDouble(color, Msh->NbrTri);
+  write_color_to_txt("color.txt", color, Msh->NbrTri);
+
+  for (int i=1; i<=ndomn; i++){
+    printf("  Connex component %d has %d triangles\n", i, NbrConnex[i]);
+  }
+
+  msh_write2dfield_Triangles("connex.solb", Msh->NbrTri, colorDouble);
+  printf("  connex components written in connex.solb \n");
+
+  free(color);
+  free(stack);
+  free(NbrConnex);
+}
+
+void write_color_to_txt(const char *filename, int *color, int NbrTri) {
+  FILE *fp = fopen(filename, "w");  // 以写入模式打开文件
+  if (!fp) {
+      printf("Error: Cannot open file %s for writing.\n", filename);
+      return;
+  }
+
+  fprintf(fp, "Triangle_ID  Component\n");
+  for (int i = 1; i <= NbrTri; i++) {
+      fprintf(fp, "%d %d\n", i, color[i]);  // 写入三角形编号和对应的连通分量
+  }
+
+  fclose(fp);  // 关闭文件
+  printf("  Color data written to %s\n", filename);
+}
+
+void print_Efr_to_txt(const char *filename, Mesh *Msh) {
+    if (!Msh || !Msh->Efr) {
+        printf("Error: Mesh or boundary edges (Efr) not initialized.\n");
+        return;
+    }
+
+    FILE *fp = fopen(filename, "w");
+    if (!fp) {
+        printf("Error: Cannot open file %s for writing.\n", filename);
+        return;
+    }
+
+    fprintf(fp, "Boundary Edges (Efr)\n");
+    fprintf(fp, "Total: %d\n", Msh->NbrEfr);
+    fprintf(fp, "Edge_ID    Vertex1    Vertex2    Reference\n");
+
+    for (int i = 1; i <= Msh->NbrEfr; i++) {
+        fprintf(fp, "%d    %d    %d    %d\n", i, Msh->Efr[i][0], Msh->Efr[i][1], Msh->EfrRef[i]);
+    }
+
+    fclose(fp);
+    printf("Boundary edges written to %s\n", filename);
+}
+
+double *convertIntToDouble(int *intArr, int size) {
+  double *doubleArr = (double *)calloc(size + 1, sizeof(double));
+  if (!doubleArr) {
+      printf("Error: Memory allocation failed!\n");
+      return NULL;
+  }
+
+  for (int i = 1; i <= size; i++) {
+      doubleArr[i] = (double)intArr[i];  // 显式转换
+  }
+
+  return doubleArr;
+}

@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
   
   //--- read a mesh 
   to =  GetWallClock();
-  Mesh * Msh = msh_read(argv[1], 0);
+  Mesh * Msh = msh_read(argv[1], 1);
   ti =  GetWallClock();
   
   if ( ! Msh ) return 0;
@@ -21,22 +21,30 @@ int main(int argc, char *argv[])
   printf("  Vertices   %10d \n", Msh->NbrVer);
   printf("  Triangles  %10d \n", Msh->NbrTri);
   printf("  time to read the mesh %lg (s) \n",ti-to);
-  
+  print_Efr_to_txt("Efr.txt", Msh);
    
   //--- create neigbhors Q2 version 
   to =  GetWallClock();
   msh_neighborsQ2(Msh);
   ti =  GetWallClock();
+  write_TriVoi_to_file("TriVoi_Q2.txt", Msh);
+  int NbrEdgBoudryQ2 = compute_NbrEdgBoudry(Msh);
   printf("  time q2 neigh.        %lg (s) \n",ti-to);
+  printf("  Boundary Edges q2 %10d \n", NbrEdgBoudryQ2);
   
   
   //--- create neigbhors with hash table 
   to =  GetWallClock();
   msh_neighbors(Msh);
   ti =  GetWallClock();
+  write_TriVoi_to_file("TriVoi_Hash.txt", Msh);
+  int NbrEdgBoudry = compute_NbrEdgBoudry(Msh);
   printf("  time hash tab neigh.  %lg (s) \n",ti-to);
+  printf("  Boundary Edges hash %10d \n", NbrEdgBoudry);
   
-  
+  //--- find connex components
+  find_connex_components(Msh);
+
   //--- TODO: compute mesh quality
   double  *Qal1 = (double  *)malloc(sizeof(double ) * (Msh->NbrTri+1));
   double  *Qal2 = (double  *)malloc(sizeof(double ) * (Msh->NbrTri+1));
