@@ -298,7 +298,7 @@ int msh_neighborsQ2(Mesh *Msh)
   //--- Compute the neighbors using a quadratic-complexity algorithm 
   for (iTri=1; iTri<=Msh->NbrTri; iTri++) {
     for (iEdg=0; iEdg<3; iEdg++) {
-      int bool_Efr = 0;
+      int boolEfr = 0;
       iVer1 = Msh->Tri[iTri][ tri2edg[iEdg][0] ];
       iVer2 = Msh->Tri[iTri][ tri2edg[iEdg][1] ];
 			
@@ -307,12 +307,12 @@ int msh_neighborsQ2(Mesh *Msh)
           if ((Msh->Efr[iEfr][0] == iVer1 && Msh->Efr[iEfr][1] == iVer2) \
            || (Msh->Efr[iEfr][0] == iVer2 && Msh->Efr[iEfr][1] == iVer1)){
             Msh->TriVoi[iTri][iEdg] = 0;
-            bool_Efr = 1;
+            boolEfr = 1;
           }
         }
       }
 
-      if (bool_Efr == 1) continue;
+      if (boolEfr == 1) continue;
 
       //--- find the Tri different from iTri that has iVer1, iVer2 as vertices 
       for (jTri=1; jTri<=Msh->NbrTri; jTri++) {
@@ -342,9 +342,10 @@ int msh_neighborsQ2(Mesh *Msh)
 
 
 
-int msh_neighbors(Mesh *Msh)
+int msh_neighbors(Mesh *Msh, const char* keyMode)
 {
   int iTri, iEdg, iVer1, iVer2;
+  int MaxCol; double AveCol;
   
   if ( ! Msh ) return 0;
   
@@ -358,7 +359,7 @@ int msh_neighbors(Mesh *Msh)
   //--- Compute the neighbors using the hash table
   for (iTri=1; iTri<=Msh->NbrTri; iTri++) {
     for (iEdg=0; iEdg<3; iEdg++) {
-      int bool_Efr = 0;
+      int boolEfr = 0;
       iVer1 = Msh->Tri[iTri][ tri2edg[iEdg][0] ];
       iVer2 = Msh->Tri[iTri][ tri2edg[iEdg][1] ];
 
@@ -367,31 +368,35 @@ int msh_neighbors(Mesh *Msh)
           if ((Msh->Efr[iEfr][0] == iVer1 && Msh->Efr[iEfr][1] == iVer2) \
            || (Msh->Efr[iEfr][0] == iVer2 && Msh->Efr[iEfr][1] == iVer1)){
             Msh->TriVoi[iTri][iEdg] = 0;
-            bool_Efr = 1;
+            boolEfr = 1;
           }
         }
       }
 
-      if (bool_Efr == 1) continue;
+      if (boolEfr == 1) continue;
 
       // TODO:
       // compute the key : iVer1+iVer2   
       // do we have objects as that key   hash_find () */
       //  if yes ===> look among objects and potentially update TriVoi */
       //  if no  ===> add to hash table   hash_add()   */
-      int id = hash_find(hsh, iVer1, iVer2);
+      int id = hash_find(hsh, iVer1, iVer2, keyMode);
       if (id != 0) {
         Msh->TriVoi[hsh->LstObj[id][2]][hsh->LstObj[id][3]] = iTri;
         hsh->LstObj[id][3] = iTri;
         Msh->TriVoi[iTri][iEdg] = hsh->LstObj[id][2];
       }
       else {
-        hash_add(hsh, iVer1, iVer2, iTri, iEdg);
+        hash_add(hsh, iVer1, iVer2, iTri, iEdg, keyMode);
       }
     }
   }
 
   printf("  Edges hash %10d \n", hsh->NbrObj);
+
+  collision(hsh, &MaxCol, &AveCol);
+  printf("  Max collision %10d \n", MaxCol);
+  printf("  Average collision %10f \n", AveCol);
 
   //free(hsh->Head);
   //free(hsh->LstObj);
@@ -465,14 +470,28 @@ HashTable * hash_init(int SizHead, int NbrMaxObj)
 }
 
 
-int hash_find(HashTable *hsh, int iVer1, int iVer2)
+int hash_find(HashTable *hsh, int iVer1, int iVer2, const char* keyMode)
 {
   
 	// to be implemented
 	
 	// return the id found (in LstObj ), if 0 the object is not in the list
 
-  int key = iVer1 + iVer2;
+  // ------------------------- Two hash keys -------------------------
+  int key;
+  if (strcmp(keyMode, "min") == 0){
+    key = iVer1 > iVer2 ? iVer2 : iVer1;
+  }
+  else if (strcmp(keyMode, "sum") == 0){
+    key = iVer1 + iVer2;
+
+  }
+  else {
+    printf("Error: Invalid keyMode\n");
+    return 0;
+  }
+  //----------------------------------------------------------------
+
   int id = hsh->Head[key%(hsh->SizHead)];
   while (id != 0) {
     if ((hsh->LstObj[id][0] == iVer1 && hsh->LstObj[id][1] == iVer2) \
@@ -487,13 +506,26 @@ int hash_find(HashTable *hsh, int iVer1, int iVer2)
 }
 
 
-int hash_add(HashTable *hsh, int iVer1, int iVer2, int iTri, int iEdg)
+int hash_add(HashTable *hsh, int iVer1, int iVer2, int iTri, int iEdg, const char* keyMode)
 {
 
   // to be implemented
 	
   // ===> add this entry in the hash tab 
-  int key = iVer1 + iVer2;
+  // ---------------------- Two hash keys ----------------------
+  int key;
+  if (strcmp(keyMode, "min") == 0){
+    key = iVer1 > iVer2 ? iVer2 : iVer1;
+  }
+  else if (strcmp(keyMode, "sum") == 0){
+    key = iVer1 + iVer2;
+  }
+  else {
+    printf("Error: Invalid keyMode\n");
+    return 0;
+  }
+  //------------------------------------------------------------
+
   int newId = hsh->NbrObj + 1;   // global id starts from 1
   hsh->NbrObj++;
 
@@ -568,7 +600,6 @@ int msh_write2dfield_Triangles(char *file, int nfield, double *field)
   
   return 1;
 }
-
 
 
 int msh_write2dmetric(char *file, int nmetric, double3d *metric) 
@@ -662,7 +693,7 @@ void find_connex_components(Mesh *Msh)
   for (int iTri=1; iTri <= Msh->NbrTri; iTri++){
     if (color[iTri] == 0){
       ndomn++;
-      printf("  ndomn = %d\n", ndomn);
+      //printf("  ndomn = %d\n", ndomn);
       color[iTri] = ndomn;
 
       top = 0;
@@ -671,8 +702,8 @@ void find_connex_components(Mesh *Msh)
       while (top > 0){
         int topTri = stack[--top];
 
-        for (int iEdg=0; iEdg<3; iEdg++){
-          int neighbor = Msh->TriVoi[topTri][iEdg];
+        for (int iEdglocal=0; iEdglocal < 3; iEdglocal++){
+          int neighbor = Msh->TriVoi[topTri][iEdglocal];
           if (neighbor != 0 && color[neighbor] == 0){
             color[neighbor] = ndomn;
             stack[top++] = neighbor;
@@ -688,14 +719,14 @@ void find_connex_components(Mesh *Msh)
   }
 
   double *colorDouble = convertIntToDouble(color, Msh->NbrTri);
-  write_color_to_txt("color.txt", color, Msh->NbrTri);
+  //write_color_to_txt("color.txt", color, Msh->NbrTri);
 
   for (int i=1; i<=ndomn; i++){
-    printf("  Connex component %d has %d triangles\n", i, NbrConnex[i]);
+    //printf("  Connex component %d has %d triangles\n", i, NbrConnex[i]);
   }
 
   msh_write2dfield_Triangles("connex.solb", Msh->NbrTri, colorDouble);
-  printf("  connex components written in connex.solb \n");
+  printf("[Output File] connex components written in connex.solb \n");
 
   free(color);
   free(stack);
@@ -703,7 +734,7 @@ void find_connex_components(Mesh *Msh)
 }
 
 void write_color_to_txt(const char *filename, int *color, int NbrTri) {
-  FILE *fp = fopen(filename, "w");  // 以写入模式打开文件
+  FILE *fp = fopen(filename, "w"); 
   if (!fp) {
       printf("Error: Cannot open file %s for writing.\n", filename);
       return;
@@ -711,11 +742,11 @@ void write_color_to_txt(const char *filename, int *color, int NbrTri) {
 
   fprintf(fp, "Triangle_ID  Component\n");
   for (int i = 1; i <= NbrTri; i++) {
-      fprintf(fp, "%d %d\n", i, color[i]);  // 写入三角形编号和对应的连通分量
+      fprintf(fp, "%d %d\n", i, color[i]); 
   }
 
-  fclose(fp);  // 关闭文件
-  printf("  Color data written to %s\n", filename);
+  fclose(fp);
+  printf("[Output File] color data written to %s\n", filename);
 }
 
 void print_Efr_to_txt(const char *filename, Mesh *Msh) {
@@ -739,7 +770,7 @@ void print_Efr_to_txt(const char *filename, Mesh *Msh) {
     }
 
     fclose(fp);
-    printf("Boundary edges written to %s\n", filename);
+    printf("[Output File] boundary edges written to %s\n", filename);
 }
 
 double *convertIntToDouble(int *intArr, int size) {
@@ -750,8 +781,34 @@ double *convertIntToDouble(int *intArr, int size) {
   }
 
   for (int i = 1; i <= size; i++) {
-      doubleArr[i] = (double)intArr[i];  // 显式转换
+      doubleArr[i] = (double)intArr[i]; 
   }
 
   return doubleArr;
+}
+
+void collision(HashTable *hsh, int *MaxCol, double *AveCol)
+{
+  int countEntry = 0;
+  int countCollision = 0;
+  int countCollisionMax = 0;
+
+  for (int i = 0; i < hsh->SizHead; i++){
+    int id = hsh->Head[i];
+    int countLocal = 0;
+    if (id != 0){
+      countEntry++;
+      while (hsh->LstObj[id][4] != 0){
+        countLocal++;
+        id = hsh->LstObj[id][4];
+      }
+      countCollision += countLocal;
+      if (countLocal > countCollisionMax){
+        countCollisionMax = countLocal;
+      }
+    }
+  }
+
+  *MaxCol = countCollisionMax;
+  *AveCol = (double)countCollision / countEntry;
 }

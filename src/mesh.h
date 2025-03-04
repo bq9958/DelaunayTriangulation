@@ -82,7 +82,7 @@ double * sol_read(char *file, int mshDim, int mshNbrSol);
 
 //--- Functions to be implemented  
 int    msh_boundingbox(Mesh *Msh);         // compute the bouding box of the mesh            
-int    msh_neighbors(Mesh *Msh);           // build TriVoi with a hash table                 
+int    msh_neighbors(Mesh *Msh, const char* keyMode);           // build TriVoi with a hash table                 
 int    msh_neighborsQ2(Mesh *Msh);         // build TriVoi with the naive quadratic approach 
 int    msh_quality(Mesh *Msh, double *Qal, int mode); // compute the quality of the mesh triangles
 
@@ -106,8 +106,8 @@ typedef struct hash_table
 //--- Implementing the following function should be necessary 
 HashTable * hash_init(int SizHead, int NbrMaxObj);          // alloc and set htable ==> allocate Head, LstObj 
 
-int hash_find(HashTable *hsh, int iVer1, int iVer2);            // return the id found (in LstObj ), if 0 the object is not in the list 
-int hash_add (HashTable *hsh, int iVer1, int iVer2, int iTri, int iEdg);  // ==> add this entry in the hash tab 
+int hash_find(HashTable *hsh, int iVer1, int iVer2, const char* keyMode);            // return the id found (in LstObj ), if 0 the object is not in the list 
+int hash_add (HashTable *hsh, int iVer1, int iVer2, int iTri, int iEdg, const char* keyMode);  // ==> add this entry in the hash tab 
 int hash_suppr(HashTable *hsh, int iVer1, int iVer2, int iTri);  // ==> suppress this entry in the hash tab 
 
 
@@ -122,6 +122,7 @@ void   find_connex_components(Mesh *Msh); // find the connex components of the m
 void write_color_to_txt(const char *filename, int *color, int NbrTri);  // write the color of the triangles in a file
 void print_Efr_to_txt(const char *filename, Mesh *Msh);  // write the boundary edges in a file
 double *convertIntToDouble(int *intArr, int size);
+void collision(HashTable *hsh, int *MaxCol, double *AveCol);  // compute the number of collisions in the hash table
 //--- Fonction used for adaptation 
 
 
