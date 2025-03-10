@@ -116,6 +116,7 @@ double distance(double x1, double y1, double x2, double y2);
 double triArea(double x0, double y0, double x1, double y1, double x2, double y2);
 void   write_TriVoi_to_file(char *file, Mesh *Msh);
 void   write_Head_to_file(char *file, HashTable *hsh);
+void write_LstObj_to_file(const char *file, HashTable *hsh);
 int    compute_NbrEdgBoudry(Mesh *Msh);  // compute the number of boundary edges
 int    compute_NbrEdg(HashTable *hsh);  // compute the number of edges in the hash table
 void   find_connex_components(Mesh *Msh); // find the connex components of the mesh

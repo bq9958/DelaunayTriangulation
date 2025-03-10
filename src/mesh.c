@@ -397,7 +397,10 @@ int msh_neighbors(Mesh *Msh, const char* keyMode)
   collision(hsh, &MaxCol, &AveCol);
   printf("  Max collision %10d \n", MaxCol);
   printf("  Average collision %10f \n", AveCol);
-
+  write_Head_to_file("Head.txt", hsh);
+  printf("[Ouput File] head hash table written in Head.txt \n");
+  write_LstObj_to_file("LstObj.txt", hsh);
+  printf("[Ouput File] list of objects written in LstObj.txt \n");
   //free(hsh->Head);
   //free(hsh->LstObj);
   //free(hsh);
@@ -409,7 +412,7 @@ int msh_neighbors(Mesh *Msh, const char* keyMode)
 
 int msh_quality(Mesh *Msh, double *Qal, int mode)
 {
-  double alpha1 = 4.0/sqrt(3.0); double alpha2 = 6.0/sqrt(3.0);
+  double alpha1 = 1.0/(4.0*sqrt(3.0)); double alpha2 = sqrt(3.0)/6.0;
   double l1, l2, l3, area;
 
   for (int iTri=1; iTri<=Msh->NbrTri; iTri++) {
@@ -722,7 +725,7 @@ void find_connex_components(Mesh *Msh)
   //write_color_to_txt("color.txt", color, Msh->NbrTri);
 
   for (int i=1; i<=ndomn; i++){
-    //printf("  Connex component %d has %d triangles\n", i, NbrConnex[i]);
+    printf("  Connex component %d has %d triangles\n", i, NbrConnex[i]);
   }
 
   msh_write2dfield_Triangles("connex.solb", Msh->NbrTri, colorDouble);
@@ -747,6 +750,23 @@ void write_color_to_txt(const char *filename, int *color, int NbrTri) {
 
   fclose(fp);
   printf("[Output File] color data written to %s\n", filename);
+}
+
+void write_LstObj_to_file(const char *filename, HashTable *hsh) {
+    FILE *fp = fopen(filename, "w");
+    if (!fp) {
+        printf("Error: Cannot open file %s for writing.\n", filename);
+        return;
+    }
+
+    fprintf(fp, "LstObj\n");
+    fprintf(fp, "Object_ID    Vertex1    Vertex2    Triangle    Edge    Next\n");
+
+    for (int i = 1; i <= hsh->NbrObj; i++) {
+        fprintf(fp, "%d    %d    %d    %d    %d    %d\n", i, hsh->LstObj[i][0], hsh->LstObj[i][1], hsh->LstObj[i][2], hsh->LstObj[i][3], hsh->LstObj[i][4]);
+    }
+
+    fclose(fp);
 }
 
 void print_Efr_to_txt(const char *filename, Mesh *Msh) {
@@ -792,6 +812,7 @@ void collision(HashTable *hsh, int *MaxCol, double *AveCol)
   int countEntry = 0;
   int countCollision = 0;
   int countCollisionMax = 0;
+  int maxId = 0;
 
   for (int i = 0; i < hsh->SizHead; i++){
     int id = hsh->Head[i];
@@ -805,10 +826,12 @@ void collision(HashTable *hsh, int *MaxCol, double *AveCol)
       countCollision += countLocal;
       if (countLocal > countCollisionMax){
         countCollisionMax = countLocal;
+        maxId = id;
       }
     }
   }
 
   *MaxCol = countCollisionMax;
   *AveCol = (double)countCollision / countEntry;
+  printf("  maxId = %d\n", maxId);
 }
