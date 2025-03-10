@@ -636,7 +636,7 @@ void find_connex_components(Mesh *Msh)
       color[iTri] = ndomn;
 
       top = 0;
-      stack[top++] = iTri;
+      stack[top++] = iTri; 
 
       while (top > 0){
         int topTri = stack[--top];
