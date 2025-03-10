@@ -397,10 +397,10 @@ int msh_neighbors(Mesh *Msh, const char* keyMode)
   collision(hsh, &MaxCol, &AveCol);
   printf("  Max collision %10d \n", MaxCol);
   printf("  Average collision %10f \n", AveCol);
-  write_Head_to_file("Head.txt", hsh);
-  printf("[Ouput File] head hash table written in Head.txt \n");
-  write_LstObj_to_file("LstObj.txt", hsh);
-  printf("[Ouput File] list of objects written in LstObj.txt \n");
+  //write_Head_to_file("Head.txt", hsh);
+  //printf("[Ouput File] head hash table written in Head.txt \n");
+  //write_LstObj_to_file("LstObj.txt", hsh);
+  //printf("[Ouput File] list of objects written in LstObj.txt \n");
   //free(hsh->Head);
   //free(hsh->LstObj);
   //free(hsh);
@@ -487,7 +487,13 @@ int hash_find(HashTable *hsh, int iVer1, int iVer2, const char* keyMode)
   }
   else if (strcmp(keyMode, "sum") == 0){
     key = iVer1 + iVer2;
-
+  }
+  else if (strcmp(keyMode, "divide") == 0){
+    if (iVer2 == 0){
+      printf("Error: Division by zero\n");
+      return -1;
+    }
+    key = (int)((double)iVer1 / iVer2 * 10000000);
   }
   else {
     printf("Error: Invalid keyMode\n");
@@ -522,6 +528,13 @@ int hash_add(HashTable *hsh, int iVer1, int iVer2, int iTri, int iEdg, const cha
   }
   else if (strcmp(keyMode, "sum") == 0){
     key = iVer1 + iVer2;
+  }
+  else if (strcmp(keyMode, "divide") == 0){
+    if (iVer2 == 0){
+      printf("Error: Division by zero\n");
+      return -1;
+    }
+    key = (int)((double)iVer1 / iVer2 * 10000000);
   }
   else {
     printf("Error: Invalid keyMode\n");

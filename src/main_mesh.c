@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
   
   
   //--- create neigbhors with hash table 
-  const char* keyMode = "min";
+  const char* keyMode = "divide";      // "min" or "sum" or "divide"
   to =  GetWallClock();
   msh_neighbors(Msh, keyMode);
   ti =  GetWallClock();
