@@ -21,18 +21,23 @@ int main(int argc, char *argv[])
   printf("  Vertices   %10d \n", Msh->NbrVer);
   printf("  Triangles  %10d \n", Msh->NbrTri);
   printf("  time to read the mesh %lg (s) \n",ti-to);
-  //print_Efr_to_txt("Efr.txt", Msh);
+  //write_Efr_to_txt("Efr.txt", Msh);
    
   //--- create neigbhors Q2 version 
-  to =  GetWallClock();
-  msh_neighborsQ2(Msh);
-  ti =  GetWallClock();
-  write_TriVoi_to_file("TriVoi_Q2.txt", Msh);
-  printf("[Output File] neighbors written in TriVoi_Q2.txt \n");
-  int NbrEdgBoudryQ2 = compute_NbrEdgBoudry(Msh);
-  printf("  time q2 neigh.        %10f (s) \n",ti-to);
-  printf("  Boundary Edges q2 %10d \n", NbrEdgBoudryQ2);
+  // to =  GetWallClock();
+  // msh_neighborsQ2(Msh);
+  // ti =  GetWallClock();
+  // write_TriVoi_to_file("TriVoi_Q2.txt", Msh);
+  // printf("[Output File] neighbors written in TriVoi_Q2.txt \n");
+  // int NbrEdgBoudryQ2 = compute_NbrEdgBoudry(Msh);
+  // printf("  time q2 neigh.        %10f (s) \n",ti-to);
+  // printf("  Nbr boundary edges q2 %10d \n", NbrEdgBoudryQ2);
   
+  // reinialize the mesh
+  free(Msh);
+  Msh = msh_read(argv[1], 1);
+  if ( ! Msh ) return 0;
+
   
   //--- create neigbhors with hash table 
   const char* keyMode = "divide";      // "min" or "sum" or "divide"
@@ -43,7 +48,7 @@ int main(int argc, char *argv[])
   printf("[Output File] neighbors written in TriVoi_Hash.txt \n");
   int NbrEdgBoudry = compute_NbrEdgBoudry(Msh);
   printf("  time hash tab neigh.  %10f (s) \n",ti-to);
-  printf("  Boundary Edges hash %10d \n", NbrEdgBoudry);
+  printf("  Nbr boundary edges hash %10d \n", NbrEdgBoudry);
   
   //--- find connex components
   find_connex_components(Msh);

@@ -334,9 +334,6 @@ int msh_neighborsQ2(Mesh *Msh)
     }
   }
 
-  //free(Msh->TriVoi);
-  //Msh->TriVoi = NULL; 
-
   return 1;
 }   
 
@@ -376,7 +373,7 @@ int msh_neighbors(Mesh *Msh, const char* keyMode)
       if (boolEfr == 1) continue;
 
       // TODO:
-      // compute the key : iVer1+iVer2   
+      // compute the key   
       // do we have objects as that key   hash_find () */
       //  if yes ===> look among objects and potentially update TriVoi */
       //  if no  ===> add to hash table   hash_add()   */
@@ -392,20 +389,14 @@ int msh_neighbors(Mesh *Msh, const char* keyMode)
     }
   }
 
-  printf("  Edges hash %10d \n", hsh->NbrObj);
+  printf("  Nbr edges hash %10d \n", hsh->NbrObj);
 
   collision(hsh, &MaxCol, &AveCol);
   printf("  Max collision %10d \n", MaxCol);
   printf("  Average collision %10f \n", AveCol);
+  
   //write_Head_to_file("Head.txt", hsh);
-  //printf("[Ouput File] head hash table written in Head.txt \n");
   //write_LstObj_to_file("LstObj.txt", hsh);
-  //printf("[Ouput File] list of objects written in LstObj.txt \n");
-  //free(hsh->Head);
-  //free(hsh->LstObj);
-  //free(hsh);
-  //free(Msh->TriVoi);
-  //Msh->TriVoi = NULL;
 
   return 1;
 }   
@@ -489,11 +480,8 @@ int hash_find(HashTable *hsh, int iVer1, int iVer2, const char* keyMode)
     key = iVer1 + iVer2;
   }
   else if (strcmp(keyMode, "divide") == 0){
-    if (iVer2 == 0){
-      printf("Error: Division by zero\n");
-      return -1;
-    }
-    key = (int)((double)iVer1 / iVer2 * 10000000);
+    key = (int)((1 + \ 
+            (iVer1 > iVer2 ? iVer2 : iVer1) / (double)(iVer1 > iVer2 ? iVer1 : iVer2) ) * 1e9);
   }
   else {
     printf("Error: Invalid keyMode\n");
@@ -530,11 +518,8 @@ int hash_add(HashTable *hsh, int iVer1, int iVer2, int iTri, int iEdg, const cha
     key = iVer1 + iVer2;
   }
   else if (strcmp(keyMode, "divide") == 0){
-    if (iVer2 == 0){
-      printf("Error: Division by zero\n");
-      return -1;
-    }
-    key = (int)((double)iVer1 / iVer2 * 10000000);
+    key = (int)((1 + \ 
+      (iVer1 > iVer2 ? iVer2 : iVer1) / (double)(iVer1 > iVer2 ? iVer1 : iVer2) ) * 1e9);
   }
   else {
     printf("Error: Invalid keyMode\n");
@@ -641,63 +626,6 @@ int msh_write2dmetric(char *file, int nmetric, double3d *metric)
   return 1;
 }
 
-double distance(double x1, double y1, double x2, double y2)
-{
-    return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
-}
-
-double triArea(double x0, double y0, double x1, double y1, double x2, double y2)
-{
-    return 0.5 * ((x1 - x0)*(y2 - y0) - (x2 - x0)*(y1 - y0));
-}
-
-void write_TriVoi_to_file(char *file, Mesh *Msh)
-{
-  
-  FILE *fp = fopen(file, "w");
-  
-  for (int iTri=1; iTri<=Msh->NbrTri; iTri++) {
-    fprintf(fp, "Triangle %d : ", iTri);
-    for (int iEdg=0; iEdg<3; iEdg++) {
-      fprintf(fp, "%d ", Msh->TriVoi[iTri][iEdg]);
-    }
-    fprintf(fp, "\n");
-  }
-  
-  fclose(fp);
-  
-  return;
-}
-
-void write_Head_to_file(char *file, HashTable *hsh)
-{
-  int i;
-  
-  FILE *fp = fopen(file, "w");
-  
-  for (i=0; i<hsh->SizHead; i++) {
-    fprintf(fp, "Head[%d] = %d \n", i, hsh->Head[i]);
-  }
-  
-  fclose(fp);
-  
-  return;
-}
-
-int compute_NbrEdgBoudry(Mesh *Msh)
-{
-  int NbrEdg = 0;
-  
-  for (int iTri=1; iTri<=Msh->NbrTri; iTri++) {
-    for (int iEdg=0; iEdg<3; iEdg++) {
-      if (Msh->TriVoi[iTri][iEdg] == 0) {
-        NbrEdg++;
-      }
-    }
-  }
-  
-  return NbrEdg;
-}
 
 void find_connex_components(Mesh *Msh)
 {
@@ -709,7 +637,6 @@ void find_connex_components(Mesh *Msh)
   for (int iTri=1; iTri <= Msh->NbrTri; iTri++){
     if (color[iTri] == 0){
       ndomn++;
-      //printf("  ndomn = %d\n", ndomn);
       color[iTri] = ndomn;
 
       top = 0;
@@ -749,6 +676,69 @@ void find_connex_components(Mesh *Msh)
   free(NbrConnex);
 }
 
+void collision(HashTable *hsh, int *MaxCol, double *AveCol)
+{
+  int countEntry = 0;
+  int countCollision = 0;
+  int countCollisionMax = 0;
+
+  for (int i = 0; i < hsh->SizHead; i++){
+    int id = hsh->Head[i];
+    int countLocal = 0;
+    if (id != 0){
+      countEntry++;
+      while (hsh->LstObj[id][4] != 0){
+        countLocal++;
+        id = hsh->LstObj[id][4];
+      }
+      countCollision += countLocal;
+      if (countLocal > countCollisionMax){
+        countCollisionMax = countLocal;
+      }
+    }
+  }
+
+  *MaxCol = countCollisionMax;
+  *AveCol = (double)countCollision / countEntry;
+}
+
+/////////////////////////// Tool functions ///////////////////////////
+
+void write_TriVoi_to_file(char *file, Mesh *Msh)
+{
+  
+  FILE *fp = fopen(file, "w");
+  
+  for (int iTri=1; iTri<=Msh->NbrTri; iTri++) {
+    fprintf(fp, "Triangle %d : ", iTri);
+    for (int iEdg=0; iEdg<3; iEdg++) {
+      fprintf(fp, "%d ", Msh->TriVoi[iTri][iEdg]);
+    }
+    fprintf(fp, "\n");
+  }
+  
+  fclose(fp);
+  
+  return;
+}
+
+void write_Head_to_file(char *file, HashTable *hsh)
+{
+  int i;
+  
+  FILE *fp = fopen(file, "w");
+  
+  for (i=0; i<hsh->SizHead; i++) {
+    fprintf(fp, "Head[%d] = %d \n", i, hsh->Head[i]);
+  }
+  
+  fclose(fp);
+  
+  printf("[Ouput File] head hash table written in Head.txt \n");
+
+  return;
+}
+
 void write_color_to_txt(const char *filename, int *color, int NbrTri) {
   FILE *fp = fopen(filename, "w"); 
   if (!fp) {
@@ -773,16 +763,18 @@ void write_LstObj_to_file(const char *filename, HashTable *hsh) {
     }
 
     fprintf(fp, "LstObj\n");
-    fprintf(fp, "Object_ID    Vertex1    Vertex2    Triangle    Edge    Next\n");
+    fprintf(fp, "Object_ID    Vertex1    Vertex2    Triangle1    Triangle2    Next\n");
 
     for (int i = 1; i <= hsh->NbrObj; i++) {
         fprintf(fp, "%d    %d    %d    %d    %d    %d\n", i, hsh->LstObj[i][0], hsh->LstObj[i][1], hsh->LstObj[i][2], hsh->LstObj[i][3], hsh->LstObj[i][4]);
     }
 
     fclose(fp);
+
+    printf("[Ouput File] list of objects written in LstObj.txt \n");
 }
 
-void print_Efr_to_txt(const char *filename, Mesh *Msh) {
+void write_Efr_to_txt(const char *filename, Mesh *Msh) {
     if (!Msh || !Msh->Efr) {
         printf("Error: Mesh or boundary edges (Efr) not initialized.\n");
         return;
@@ -820,31 +812,30 @@ double *convertIntToDouble(int *intArr, int size) {
   return doubleArr;
 }
 
-void collision(HashTable *hsh, int *MaxCol, double *AveCol)
+double distance(double x1, double y1, double x2, double y2)
 {
-  int countEntry = 0;
-  int countCollision = 0;
-  int countCollisionMax = 0;
-  int maxId = 0;
+    return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
+}
 
-  for (int i = 0; i < hsh->SizHead; i++){
-    int id = hsh->Head[i];
-    int countLocal = 0;
-    if (id != 0){
-      countEntry++;
-      while (hsh->LstObj[id][4] != 0){
-        countLocal++;
-        id = hsh->LstObj[id][4];
-      }
-      countCollision += countLocal;
-      if (countLocal > countCollisionMax){
-        countCollisionMax = countLocal;
-        maxId = id;
+double triArea(double x0, double y0, double x1, double y1, double x2, double y2)
+{
+    return 0.5 * ((x1 - x0)*(y2 - y0) - (x2 - x0)*(y1 - y0));
+}
+
+
+int compute_NbrEdgBoudry(Mesh *Msh)
+{
+  int NbrEdg = 0;
+  
+  for (int iTri=1; iTri<=Msh->NbrTri; iTri++) {
+    for (int iEdg=0; iEdg<3; iEdg++) {
+      if (Msh->TriVoi[iTri][iEdg] == 0) {
+        NbrEdg++;
       }
     }
   }
-
-  *MaxCol = countCollisionMax;
-  *AveCol = (double)countCollision / countEntry;
-  printf("  maxId = %d\n", maxId);
+  
+  return NbrEdg;
 }
+
+

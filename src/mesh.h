@@ -121,7 +121,7 @@ int    compute_NbrEdgBoudry(Mesh *Msh);  // compute the number of boundary edges
 int    compute_NbrEdg(HashTable *hsh);  // compute the number of edges in the hash table
 void   find_connex_components(Mesh *Msh); // find the connex components of the mesh
 void write_color_to_txt(const char *filename, int *color, int NbrTri);  // write the color of the triangles in a file
-void print_Efr_to_txt(const char *filename, Mesh *Msh);  // write the boundary edges in a file
+void write_Efr_to_txt(const char *filename, Mesh *Msh);  // write the boundary edges in a file
 double *convertIntToDouble(int *intArr, int size);
 void collision(HashTable *hsh, int *MaxCol, double *AveCol);  // compute the number of collisions in the hash table
 //--- Fonction used for adaptation 
