@@ -24,14 +24,14 @@ int main(int argc, char *argv[])
   //write_Efr_to_txt("Efr.txt", Msh);
    
   //--- create neigbhors Q2 version 
-  // to =  GetWallClock();
-  // msh_neighborsQ2(Msh);
-  // ti =  GetWallClock();
-  // write_TriVoi_to_file("TriVoi_Q2.txt", Msh);
-  // printf("[Output File] neighbors written in TriVoi_Q2.txt \n");
-  // int NbrEdgBoudryQ2 = compute_NbrEdgBoudry(Msh);
-  // printf("  time q2 neigh.        %10f (s) \n",ti-to);
-  // printf("  Nbr boundary edges q2 %10d \n", NbrEdgBoudryQ2);
+  to =  GetWallClock();
+  msh_neighborsQ2(Msh);
+  ti =  GetWallClock();
+  write_TriVoi_to_file("TriVoi_Q2.txt", Msh);
+  printf("[Output File] neighbors written in TriVoi_Q2.txt \n");
+  int NbrEdgBoudryQ2 = compute_NbrEdgBoudry(Msh);
+  printf("  time q2 neigh.        %10f (s) \n",ti-to);
+  printf("  Nbr boundary edges q2 %10d \n", NbrEdgBoudryQ2);
   
   // reinialize the mesh
   free(Msh);
