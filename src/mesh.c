@@ -339,10 +339,10 @@ int msh_neighborsQ2(Mesh *Msh)
 
 
 
-int msh_neighbors(Mesh *Msh, const char* keyMode)
+HashTable *msh_neighbors(Mesh *Msh, const char* keyMode)
 {
   int iTri, iEdg, iVer1, iVer2;
-  int MaxCol; double AveCol;
+  
   
   if ( ! Msh ) return 0;
   
@@ -390,15 +390,11 @@ int msh_neighbors(Mesh *Msh, const char* keyMode)
   }
 
   printf("  Nbr edges hash %10d \n", hsh->NbrObj);
-
-  collision(hsh, &MaxCol, &AveCol);
-  printf("  Max collision %10d \n", MaxCol);
-  printf("  Average collision %10f \n", AveCol);
   
   //write_Head_to_file("Head.txt", hsh);
   //write_LstObj_to_file("LstObj.txt", hsh);
 
-  return 1;
+  return hsh;
 }   
 
 int msh_quality(Mesh *Msh, double *Qal, int mode)
@@ -686,7 +682,7 @@ void collision(HashTable *hsh, int *MaxCol, double *AveCol)
     int id = hsh->Head[i];
     int countLocal = 0;
     if (id != 0){
-      countEntry++;
+      if (hsh->LstObj[id][4] != 0){countEntry++;}
       while (hsh->LstObj[id][4] != 0){
         countLocal++;
         id = hsh->LstObj[id][4];

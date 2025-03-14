@@ -71,22 +71,6 @@ typedef struct t_mesh
     
 } Mesh; 
 
-
-
-//--- Provided functions 
-Mesh   * msh_init();
-Mesh   * msh_read(char *file, int readEfr);
-int      msh_write(Mesh *Msh, char *file); 
-double * sol_read(char *file, int mshDim, int mshNbrSol);
-
-
-//--- Functions to be implemented  
-int    msh_boundingbox(Mesh *Msh);         // compute the bouding box of the mesh            
-int    msh_neighbors(Mesh *Msh, const char* keyMode);           // build TriVoi with a hash table                 
-int    msh_neighborsQ2(Mesh *Msh);         // build TriVoi with the naive quadratic approach 
-int    msh_quality(Mesh *Msh, double *Qal, int mode); // compute the quality of the mesh triangles
-
-
 //--- A provided simple hash table data structure 
 typedef struct hash_table
 {
@@ -101,6 +85,19 @@ typedef struct hash_table
   // LstObj[id][4]   = idxNxt,       the link to the next element in collision, if = 0 last element of the list 
   
 } HashTable;
+
+//--- Provided functions 
+Mesh   * msh_init();
+Mesh   * msh_read(char *file, int readEfr);
+int      msh_write(Mesh *Msh, char *file); 
+double * sol_read(char *file, int mshDim, int mshNbrSol);
+
+
+//--- Functions to be implemented  
+int    msh_boundingbox(Mesh *Msh);         // compute the bouding box of the mesh            
+HashTable   * msh_neighbors(Mesh *Msh, const char* keyMode);           // build TriVoi with a hash table                 
+int    msh_neighborsQ2(Mesh *Msh);         // build TriVoi with the naive quadratic approach 
+int    msh_quality(Mesh *Msh, double *Qal, int mode); // compute the quality of the mesh triangles
 
 
 //--- Implementing the following function should be necessary 

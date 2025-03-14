@@ -41,9 +41,15 @@ int main(int argc, char *argv[])
   
   //--- create neigbhors with hash table 
   const char* keyMode = "divide";      // "min" or "sum" or "divide"
+  HashTable *hsh;
   to =  GetWallClock();
-  msh_neighbors(Msh, keyMode);
+  hsh = msh_neighbors(Msh, keyMode);
   ti =  GetWallClock();
+  int MaxCol; double AveCol;
+  collision(hsh, &MaxCol, &AveCol);
+  printf("  Max collision %10d \n", MaxCol);
+  printf("  Average collision %10f \n", AveCol);
+
   write_TriVoi_to_file("TriVoi_Hash.txt", Msh);
   printf("[Output File] neighbors written in TriVoi_Hash.txt \n");
   int NbrEdgBoudry = compute_NbrEdgBoudry(Msh);
