@@ -234,13 +234,27 @@ double * sol_read(char *file, int mshDim, int mshNbrSol)
 int msh_boundingbox(Mesh *Msh)
 {
   int1d iVer;
-  
+
+  double dx, dy;
+
   //--- compute bounding box 
   for (iVer=1; iVer<=Msh->NbrVer; iVer++) {
     // TODO: Set Msh->Box  
+    if (Msh->Crd[iVer][0] < Msh->Box[0]) Msh->Box[0] = Msh->Crd[iVer][0];
+    if (Msh->Crd[iVer][0] > Msh->Box[1]) Msh->Box[1] = Msh->Crd[iVer][0];
+    if (Msh->Crd[iVer][1] < Msh->Box[2]) Msh->Box[2] = Msh->Crd[iVer][1];
+    if (Msh->Crd[iVer][1] > Msh->Box[3]) Msh->Box[3] = Msh->Crd[iVer][1];
   }
-  
-  
+
+  dx = Msh->Box[1] - Msh->Box[0]; dy = Msh->Box[3] - Msh->Box[2];
+  Msh->Box[0] = Msh->Box[0] - 0.5*dx; Msh->Box[1] = Msh->Box[1] + 0.5*dx;
+  Msh->Box[2] = Msh->Box[2] - 0.5*dy; Msh->Box[3] = Msh->Box[3] + 0.5*dy;
+  printf("  Bounding box: xmin %f xmax %f ymin %f ymax %f \n", Msh->Box[0], Msh->Box[1], Msh->Box[2], Msh->Box[3]);
+  Msh->Crd[Msh->NbrVer+1][0] = Msh->Box[0]; Msh->Crd[Msh->NbrVer+1][1] = Msh->Box[3]; // (xmin, ymax)
+  Msh->Crd[Msh->NbrVer+2][0] = Msh->Box[1]; Msh->Crd[Msh->NbrVer+2][1] = Msh->Box[3]; // (xmax, ymax)
+  Msh->Crd[Msh->NbrVer+3][0] = Msh->Box[1]; Msh->Crd[Msh->NbrVer+3][1] = Msh->Box[2]; // (xmax, ymin)
+  Msh->Crd[Msh->NbrVer+4][0] = Msh->Box[0]; Msh->Crd[Msh->NbrVer+4][1] = Msh->Box[2]; // (xmin, ymin)
+
   return 1;
 }
 
@@ -339,7 +353,7 @@ int msh_neighborsQ2(Mesh *Msh)
 
 
 
-HashTable *msh_neighbors(Mesh *Msh, const char* keyMode)
+HashTable * msh_neighbors(Mesh *Msh, const char* keyMode)
 {
   int iTri, iEdg, iVer1, iVer2;
   
@@ -391,8 +405,8 @@ HashTable *msh_neighbors(Mesh *Msh, const char* keyMode)
 
   printf("  Nbr edges hash %10d \n", hsh->NbrObj);
   
-  //write_Head_to_file("Head.txt", hsh);
-  //write_LstObj_to_file("LstObj.txt", hsh);
+  write_Head_to_file("../output/Head.txt", hsh);
+  write_LstObj_to_file("../output/LstObj.txt", hsh);
 
   return hsh;
 }   
@@ -658,7 +672,7 @@ void find_connex_components(Mesh *Msh)
   }
 
   double *colorDouble = convertIntToDouble(color, Msh->NbrTri);
-  //write_color_to_txt("color.txt", color, Msh->NbrTri);
+  //write_color_to_txt("../output/color.txt", color, Msh->NbrTri);
 
   for (int i=1; i<=ndomn; i++){
     printf("  Connex component %d has %d triangles\n", i, NbrConnex[i]);
@@ -793,6 +807,32 @@ void write_Efr_to_txt(const char *filename, Mesh *Msh) {
     fclose(fp);
     printf("[Output File] boundary edges written to %s\n", filename);
 }
+
+
+void write_Crd_to_file(const char *filename, Mesh *Msh) {
+    if (!Msh || !Msh->Crd) {
+        printf("Error: Mesh or coordinates (Crd) not initialized.\n");
+        return;
+    }
+
+    FILE *fp = fopen(filename, "w");
+    if (!fp) {
+        printf("Error: Cannot open file %s for writing.\n", filename);
+        return;
+    }
+
+    fprintf(fp, "Vertices Coordinates\n");
+    fprintf(fp, "Total: %d\n", Msh->NbrVer);
+    fprintf(fp, "Vertex_ID    X_Coord    Y_Coord\n");
+
+    for (int i = 1; i <= Msh->NbrVer; i++) {
+        fprintf(fp, "%d    %.10f    %.10f\n", i, Msh->Crd[i][0], Msh->Crd[i][1]);
+    }
+
+    fclose(fp);
+    printf("[Output File] Vertex coordinates written to %s\n", filename);
+}
+
 
 double *convertIntToDouble(int *intArr, int size) {
   double *doubleArr = (double *)calloc(size + 1, sizeof(double));
