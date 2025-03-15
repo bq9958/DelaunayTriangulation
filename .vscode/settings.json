@@ -2,6 +2,7 @@
     "files.associations": {
         "cmath": "c",
         "complex": "c",
-        "mesh.h": "c"
+        "mesh.h": "c",
+        "*.tcc": "c"
     }
 }

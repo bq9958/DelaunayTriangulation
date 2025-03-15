@@ -1,47 +1,33 @@
 #include <triangulation.h>
 
-int tri2edg[3][2] = { {1,2} , {2,0} , {0,1} };
-
 void kernelDelaunay(double2d *points, int NbrPts, int *NbrTri, double3d *Tri, double3d *Voi)
 {
     
 
 }
 
-int createCavity(int iTri, Mesh *Msh, HashTable *hsh,double x, double y, int iPtIns)
+void boucleDetection(Mesh *Msh, int iPt, int iTri, int *mark, int *step)
 {
-    int Pt; int iTriVoi;
-    for (int iPt = 0; iPt < 3; iPt++)
-    {
-        Pt = Msh->Tri[iTri][iPt];    // 正在处理的三角形的顶点
-        for (int iVoi = 1; iVoi <= 2; iVoi++){      
-            iTriVoi = Msh->TriVoi[iTri][tri2edg[iPt][iVoi]];  //正在处理的三角形的邻居
-            if (iTriVoi != 0){
-                for (int iVer = 0; iVer < 3; iVer++){       // 正在处理的邻居的顶点
-                    if (Msh->Tri[iTriVoi][iVer] == Pt){     // 如果邻居属于(x,y)的boucle
-                        if (inCircumcircle(Msh->Crd[Msh->Tri[iTriVoi][0]][0], Msh->Crd[Msh->Tri[iTriVoi][0]][1], \
-                                           Msh->Crd[Msh->Tri[iTriVoi][1]][0], Msh->Crd[Msh->Tri[iTriVoi][1]][1], \
-                                           Msh->Crd[Msh->Tri[iTriVoi][2]][0], Msh->Crd[Msh->Tri[iTriVoi][2]][1], \
-                                           x, y))    // 判断插入的点(x,y)是否在邻居的外接圆内
-                        {
-                            // 提取邻居的三个顶点做进一步处理
-                            int Pt0 = Msh->Tri[iTriVoi][tri2edg[iVer][0]];
-                            int Pt1 = Msh->Tri[iTriVoi][tri2edg[iVer][1]];
-                            int Pt2 = Msh->Tri[iTriVoi][iVer];
-                            int position = inTriangle(Msh->Crd[Pt0][0],Msh->Crd[Pt0][0],
-                                                      Msh->Crd[Pt1][0],Msh->Crd[Pt1][0],
-                                                      Msh->Crd[Pt2][0],Msh->Crd[Pt2][0],x,y);     // 判断(x,y)在邻居的哪个方位，以便删除边
-                            // hash_suppr(hsh, Msh->Tri[iTriVoi][tri2edg[position][0]], Msh->Tri[iTriVoi][tri2edg[position][0]]);
-                            // hash_add(hsh, Msh->Tri[iTriVoi][tri2edg[position][0]], iPtIns, Msh->NbrTri+1, "sum");
-                            // hash_add(hsh, Msh->Tri[iTriVoi][tri2edg[position][1]], iPtIns, Msh->NbrTri+1, "sum");
-                            // Msh->Tri[iTriVoi][0] = 0; Msh->Tri[iTriVoi][1] = 0; Msh->Tri[iTriVoi][2] = 0; 
-                            // Msh->NbrTri ++;
-                        }
-                    }
-                }     // end for vertex of neighbor
-            }
-        }   // end for neighbor of iTri
-    }   // end for three vertex of iTri
+    int search = 3;
+    mark[iTri] = 1;
+
+    printf("Step %d\n", *step); 
+    (*step)++;
+
+    for (int iEdglocal=0; iEdglocal < 3; iEdglocal++){
+        int neighbor = Msh->TriVoi[iTri][iEdglocal];
+        if (mark[neighbor] == 0 && (Msh->Tri[neighbor][0] == iPt || Msh->Tri[neighbor][1] == iPt 
+            || Msh->Tri[neighbor][2] == iPt)){
+            mark[neighbor] = 1;     // belongs to boucle
+            boucleDetection(Msh, iPt, neighbor, mark, step);
+        }
+        else{
+            if (mark[neighbor] != 1)
+                mark[neighbor] = -1;    // not belong to boucle
+            search--;
+        }
+        if (search == 0) {return;}
+    }
 }
 
 int location(Mesh *Msh, int iTri, double x, double y, int *move)

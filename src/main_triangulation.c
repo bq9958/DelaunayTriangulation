@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
     const char *keymode = "sum";
     Msh->NbrVer = 10;
     int SizTri = 3*Msh->NbrVer;
-    int move = 0;
+    int move = 0; int step = 0;
 
     // Allocate memory for Msh
     Msh->Crd = TestPointSet(Msh->NbrVer);
@@ -26,9 +26,11 @@ int main(int argc, char *argv[])
     write_TriVoi_to_file("../output/TriVoi.txt", Msh);
 
     //////////////////////////////////// Test session ///////////////////////////////////////
-    printf("(x,y) to search : (%f, %f)\n", Msh->Crd[1][0], Msh->Crd[1][1]);
-    int iTriFinal = location(Msh, 2, Msh->Crd[1][0], Msh->Crd[1][1], &move);
-    printf("iTriFinal : %d\n", iTriFinal);
+    int *mark = (int *)calloc(Msh->NbrTri+1, sizeof(int));
+    boucleDetection(Msh, 14, 1, mark, &step);    
+    for (int i=0; i<Msh->NbrTri+1; i++){
+        printf("mark[%d] %d\n", i, mark[i]);
+    }
 
     save_triangulation_to_file("../output/triangulation.txt", Msh, hsh);
     plot_with_gnuplot("../output/triangulation.txt");
