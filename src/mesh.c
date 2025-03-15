@@ -664,7 +664,7 @@ void find_connex_components(Mesh *Msh)
     printf("  Connex component %d has %d triangles\n", i, NbrConnex[i]);
   }
 
-  msh_write2dfield_Triangles("connex.solb", Msh->NbrTri, colorDouble);
+  msh_write2dfield_Triangles("../output/connex.solb", Msh->NbrTri, colorDouble);
   printf("[Output File] connex components written in connex.solb \n");
 
   free(color);

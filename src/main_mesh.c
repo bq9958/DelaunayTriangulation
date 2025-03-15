@@ -3,7 +3,7 @@
 
 int main(int argc, char *argv[])
 { 
-  int    iTri, iVer;
+  int    iTri, iVer; int NbrEdgBoudry;
   double to, ti;
   
   if ( argc < 2 ) {
@@ -13,7 +13,8 @@ int main(int argc, char *argv[])
   
   //--- read a mesh 
   to =  GetWallClock();
-  Mesh * Msh = msh_read(argv[1], 1);
+  int readEfr = 1;
+  Mesh * Msh = msh_read(argv[1], readEfr);
   ti =  GetWallClock();
   
   if ( ! Msh ) return 0;
@@ -27,11 +28,16 @@ int main(int argc, char *argv[])
   to =  GetWallClock();
   msh_neighborsQ2(Msh);
   ti =  GetWallClock();
-  write_TriVoi_to_file("TriVoi_Q2.txt", Msh);
+  write_TriVoi_to_file("../output/TriVoi_Q2.txt", Msh);
   printf("[Output File] neighbors written in TriVoi_Q2.txt \n");
-  int NbrEdgBoudryQ2 = compute_NbrEdgBoudry(Msh);
+  if (Msh->NbrEfr != 0) {   // we have boundary edge number in mesh file
+    NbrEdgBoudry = Msh->NbrEfr;
+  }
+  else{                     // if we do not, we compute manually
+    NbrEdgBoudry = compute_NbrEdgBoudry(Msh);
+  }
   printf("  time q2 neigh.        %10f (s) \n",ti-to);
-  printf("  Nbr boundary edges q2 %10d \n", NbrEdgBoudryQ2);
+  printf("  Nbr boundary edges q2 %10d \n", NbrEdgBoudry);
   
   // reinialize the mesh
   free(Msh);
@@ -50,9 +56,14 @@ int main(int argc, char *argv[])
   printf("  Max collision %10d \n", MaxCol);
   printf("  Average collision %10f \n", AveCol);
 
-  write_TriVoi_to_file("TriVoi_Hash.txt", Msh);
+  write_TriVoi_to_file("../output/TriVoi_Hash.txt", Msh);
   printf("[Output File] neighbors written in TriVoi_Hash.txt \n");
-  int NbrEdgBoudry = compute_NbrEdgBoudry(Msh);
+  if (Msh->NbrEfr != 0) {   // we have boundary edge number in mesh file
+    NbrEdgBoudry = Msh->NbrEfr;
+  }
+  else{                     // if we do not, we compute manually
+    NbrEdgBoudry = compute_NbrEdgBoudry(Msh);
+  }
   printf("  time hash tab neigh.  %10f (s) \n",ti-to);
   printf("  Nbr boundary edges hash %10d \n", NbrEdgBoudry);
   
@@ -66,8 +77,8 @@ int main(int argc, char *argv[])
   msh_quality(Msh, Qal1, 1);
   msh_quality(Msh, Qal2, 2);
   
-  msh_write2dfield_Triangles("quality1.solb", Msh->NbrTri, Qal1);
-  msh_write2dfield_Triangles("quality2.solb", Msh->NbrTri, Qal2);
+  msh_write2dfield_Triangles("../output/quality1.solb", Msh->NbrTri, Qal1);
+  msh_write2dfield_Triangles("../output/quality2.solb", Msh->NbrTri, Qal2);
   printf("[Output File] quality written in quality.solb \n");
   
   //--- TODO: compute metric field
@@ -79,7 +90,7 @@ int main(int argc, char *argv[])
   	 Met[iVer][2] = 1.;
   } 
   
-  msh_write2dmetric("metric.solb", Msh->NbrVer, Met);
+  msh_write2dmetric("../output/metric.solb", Msh->NbrVer, Met);
   printf("[Output File] metric written in metric.solb \n");
   	
   	
