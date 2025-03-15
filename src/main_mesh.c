@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
   printf("  Vertices   %10d \n", Msh->NbrVer);
   printf("  Triangles  %10d \n", Msh->NbrTri);
   printf("  time to read the mesh %lg (s) \n",ti-to);
-  //write_Efr_to_txt("Efr.txt", Msh);
+  //write_Efr_to_txt("../output/Efr.txt", Msh);
    
   //--- create neigbhors Q2 version 
   to =  GetWallClock();

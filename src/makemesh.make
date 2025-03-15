@@ -2,9 +2,10 @@
 CC=gcc
 COPTS= -O2 -Wall
 BUILD_DIR=../build
+OUTPUT_DIR=../output
 
-# 确保构建目录存在
-$(shell mkdir -p $(BUILD_DIR))
+
+$(shell mkdir -p $(BUILD_DIR) $(OUTPUT_DIR))
 
 mesh: $(BUILD_DIR)/mesh.o $(BUILD_DIR)/main_mesh.o $(BUILD_DIR)/eigen.o $(BUILD_DIR)/lplib3.o $(BUILD_DIR)/libmesh6.o  
 	$(CC) $(COPTS) -o $(BUILD_DIR)/mesh $(BUILD_DIR)/mesh.o $(BUILD_DIR)/main_mesh.o $(BUILD_DIR)/eigen.o $(BUILD_DIR)/libmesh6.o $(BUILD_DIR)/lplib3.o -lpthread -lm

@@ -477,7 +477,7 @@ int hash_find(HashTable *hsh, int iVer1, int iVer2, const char* keyMode)
   }
   else if (strcmp(keyMode, "divide") == 0){
     key = (int)((1 + \ 
-            (iVer1 > iVer2 ? iVer2 : iVer1) / (double)(iVer1 > iVer2 ? iVer1 : iVer2) ) * 1e9);
+            (iVer1 > iVer2 ? iVer2 : iVer1) / (double)(iVer1 > iVer2 ? iVer1 : iVer2) ) * 1e7);
   }
   else {
     printf("Error: Invalid keyMode\n");
@@ -515,7 +515,7 @@ int hash_add(HashTable *hsh, int iVer1, int iVer2, int iTri, int iEdg, const cha
   }
   else if (strcmp(keyMode, "divide") == 0){
     key = (int)((1 + \ 
-      (iVer1 > iVer2 ? iVer2 : iVer1) / (double)(iVer1 > iVer2 ? iVer1 : iVer2) ) * 1e9);
+      (iVer1 > iVer2 ? iVer2 : iVer1) / (double)(iVer1 > iVer2 ? iVer1 : iVer2) ) * 1e7);
   }
   else {
     printf("Error: Invalid keyMode\n");
