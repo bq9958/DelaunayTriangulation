@@ -1,14 +1,106 @@
 #include <triangulation.h>
 
+int tri2edg[3][2] = { {1,2} , {2,0} , {0,1} };
+
 void kernelDelaunay(double2d *points, int NbrPts, int *NbrTri, double3d *Tri, double3d *Voi)
 {
     
 
 }
 
+int createCavity(int iTri, Mesh *Msh, HashTable *hsh,double x, double y, int iPtIns)
+{
+    int Pt; int iTriVoi;
+    for (int iPt = 0; iPt < 3; iPt++)
+    {
+        Pt = Msh->Tri[iTri][iPt];    // 正在处理的三角形的顶点
+        for (int iVoi = 1; iVoi <= 2; iVoi++){      
+            iTriVoi = Msh->TriVoi[iTri][tri2edg[iPt][iVoi]];  //正在处理的三角形的邻居
+            if (iTriVoi != 0){
+                for (int iVer = 0; iVer < 3; iVer++){       // 正在处理的邻居的顶点
+                    if (Msh->Tri[iTriVoi][iVer] == Pt){     // 如果邻居属于(x,y)的boucle
+                        if (inCircumcircle(Msh->Crd[Msh->Tri[iTriVoi][0]][0], Msh->Crd[Msh->Tri[iTriVoi][0]][1], \
+                                           Msh->Crd[Msh->Tri[iTriVoi][1]][0], Msh->Crd[Msh->Tri[iTriVoi][1]][1], \
+                                           Msh->Crd[Msh->Tri[iTriVoi][2]][0], Msh->Crd[Msh->Tri[iTriVoi][2]][1], \
+                                           x, y))    // 判断插入的点(x,y)是否在邻居的外接圆内
+                        {
+                            // 提取邻居的三个顶点做进一步处理
+                            int Pt0 = Msh->Tri[iTriVoi][tri2edg[iVer][0]];
+                            int Pt1 = Msh->Tri[iTriVoi][tri2edg[iVer][1]];
+                            int Pt2 = Msh->Tri[iTriVoi][iVer];
+                            int position = inTriangle(Msh->Crd[Pt0][0],Msh->Crd[Pt0][0],
+                                                      Msh->Crd[Pt1][0],Msh->Crd[Pt1][0],
+                                                      Msh->Crd[Pt2][0],Msh->Crd[Pt2][0],x,y);     // 判断(x,y)在邻居的哪个方位，以便删除边
+                            // hash_suppr(hsh, Msh->Tri[iTriVoi][tri2edg[position][0]], Msh->Tri[iTriVoi][tri2edg[position][0]]);
+                            // hash_add(hsh, Msh->Tri[iTriVoi][tri2edg[position][0]], iPtIns, Msh->NbrTri+1, "sum");
+                            // hash_add(hsh, Msh->Tri[iTriVoi][tri2edg[position][1]], iPtIns, Msh->NbrTri+1, "sum");
+                            // Msh->Tri[iTriVoi][0] = 0; Msh->Tri[iTriVoi][1] = 0; Msh->Tri[iTriVoi][2] = 0; 
+                            // Msh->NbrTri ++;
+                        }
+                    }
+                }     // end for vertex of neighbor
+            }
+        }   // end for neighbor of iTri
+    }   // end for three vertex of iTri
+}
 
+int location(Mesh *Msh, int iTri, double x, double y, int *move)
+{
+    double x0, y0, x1, y1, x2, y2;
+    int position;
 
-///////////////////////////////// Tool functions //////////////////////////////////////
+    printf("Move %d\n", *move); 
+    (*move)++;
+
+    x0 = Msh->Crd[Msh->Tri[iTri][0]][0]; y0 = Msh->Crd[Msh->Tri[iTri][0]][1];
+    x1 = Msh->Crd[Msh->Tri[iTri][1]][0]; y1 = Msh->Crd[Msh->Tri[iTri][1]][1];
+    x2 = Msh->Crd[Msh->Tri[iTri][2]][0]; y2 = Msh->Crd[Msh->Tri[iTri][2]][1];
+
+    position = inTriangle(x0, y0, x1, y1, x2, y2, x, y);
+    if (position == -1)
+    {
+        return iTri;
+    }
+    else {
+        iTri = Msh->TriVoi[iTri][position];
+        location(Msh, iTri, x, y, move);
+    }
+}
+
+int inTriangle(double x0, double y0, double x1, double y1, double x2, double y2, double x, double y)
+{
+    double beta[3];
+    int choice[3] = {0, 0, 0};
+    int count = 0;
+
+    barycenter(x0, y0, x1, y1, x2, y2, x, y, &beta[0], &beta[1], &beta[2]);
+    for (int i=0; i<3; i++){
+        if (beta[i] < 0)
+        {
+            count++;
+            choice[count] = i;
+        }
+    }
+    if (count == 1)    // one beta is negative
+    {
+        return choice[count];
+    }
+    else if (count == 2)  // two betas are negative
+    {
+        srand(time(NULL));
+        int random_number = (rand() % 2) ? 2 : 1;
+        return choice[random_number];
+    }
+    else if (count == 0)  // all beta are positive
+    {
+        return -1;
+    }
+    else
+    {
+        printf("Error: Invalid location\n");
+        return -2;
+    }
+}
 
 
 double2d *TestPointSet(int NbrPts)
@@ -121,9 +213,11 @@ void plot_with_gnuplot(const char *filename) {
     fprintf(gnuplot, "set ylabel 'Y'\n");
     fprintf(gnuplot, "set grid\n");
     fprintf(gnuplot, "unset key\n");
-
-    fprintf(gnuplot, "plot '%s' index 0 with points pt 7 lc rgb 'blue', \\\n", filename);
-    fprintf(gnuplot, "     '%s' index 1 with lines lw 2 lc rgb 'red' \n", filename);
+    
+    fprintf(gnuplot, "plot '%s' index 0 using 1:2 with points pt 7 lc rgb 'blue', \\\n", filename);
+    fprintf(gnuplot, "     '%s' index 1 using 1:2 with lines lw 2 lc rgb 'red', \\\n", filename);
+    fprintf(gnuplot, "     '%s' index 0 using 1:2:(sprintf('%%d', $0+1)) with labels offset 0.3,0.3 font ',10' textcolor rgb 'black'\n", filename);
+    
     fflush(gnuplot);
     pclose(gnuplot);
 }

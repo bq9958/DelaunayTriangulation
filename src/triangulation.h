@@ -9,9 +9,8 @@ typedef struct {
 
 
 void kernelDelaunay(double2d *points, int NbrPts, int *NbrTri, double3d *Tri, double3d *Voi);
-
-
-///////////////////////////// Tool functions //////////////////////////////////////
+int location(Mesh *Msh, int iTri, double x, double y, int *move);
+int inTriangle(double x0, double y0, double x1, double y1, double x2, double y2, double x, double y);
 bool inCircumcircle(double x1, double y1, double x2, double y2, double x3, double y3, double x, double y);
 double rCircumcircle(double x1, double y1, double x2, double y2, double x3, double y3);
 Point centerCircumcircle(double x1, double y1, double x2, double y2, double x3, double y3);

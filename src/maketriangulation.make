@@ -4,7 +4,6 @@ CC=gcc
 COPTS = -g -Wall
 BUILD_DIR=../build
 
-# 确保构建目录存在
 $(shell mkdir -p $(BUILD_DIR))
 
 triangulation: $(BUILD_DIR)/mesh.o $(BUILD_DIR)/triangulation.o $(BUILD_DIR)/main_triangulation.o $(BUILD_DIR)/eigen.o $(BUILD_DIR)/lplib3.o $(BUILD_DIR)/libmesh6.o  
