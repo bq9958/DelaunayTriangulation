@@ -105,7 +105,7 @@ HashTable * hash_init(int SizHead, int NbrMaxObj);          // alloc and set hta
 
 int hash_find(HashTable *hsh, int iVer1, int iVer2, const char* keyMode);            // return the id found (in LstObj ), if 0 the object is not in the list 
 int hash_add (HashTable *hsh, int iVer1, int iVer2, int iTri, int iEdg, const char* keyMode);  // ==> add this entry in the hash tab 
-int hash_suppr(HashTable *hsh, int iVer1, int iVer2, int iTri);  // ==> suppress this entry in the hash tab 
+int hash_suppr(HashTable *hsh, int iVer1, int iVer2, const char* keyMode);  // ==> suppress this entry in the hash tab 
 
 
 //--- Tool functions
@@ -120,6 +120,7 @@ int    compute_NbrEdg(HashTable *hsh);  // compute the number of edges in the ha
 void   find_connex_components(Mesh *Msh); // find the connex components of the mesh
 void write_color_to_txt(const char *filename, int *color, int NbrTri);  // write the color of the triangles in a file
 void write_Efr_to_txt(const char *filename, Mesh *Msh);  // write the boundary edges in a file
+void write_Tri_to_file(const char *filename, Mesh *Msh);
 double *convertIntToDouble(int *intArr, int size);
 void collision(HashTable *hsh, int *MaxCol, double *AveCol);  // compute the number of collisions in the hash table
 //--- Fonction used for adaptation 

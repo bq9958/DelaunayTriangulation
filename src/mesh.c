@@ -553,13 +553,62 @@ int hash_add(HashTable *hsh, int iVer1, int iVer2, int iTri, int iEdg, const cha
 
 
 
-int hash_suppr(HashTable *hsh, int iVer1, int iVer2, int iTri)
+int hash_suppr(HashTable *hsh, int iVer1, int iVer2, const char* keyMode)
 {
+	int key;
+  if (strcmp(keyMode, "min") == 0){
+    key = iVer1 > iVer2 ? iVer2 : iVer1;
+  }
+  else if (strcmp(keyMode, "sum") == 0){
+    key = iVer1 + iVer2;
+  }
+  else if (strcmp(keyMode, "divide") == 0){
+    key = (int)((1 + \ 
+      (iVer1 > iVer2 ? iVer2 : iVer1) / (double)(iVer1 > iVer2 ? iVer1 : iVer2) ) * 1e9);
+  }
+  else {
+    printf("Error: Invalid keyMode\n");
+    return 0;
+  }
 
-  // to be implemented
-	
-  // ===> suppress this entry in the hash tab 
-	
+  int match = 0;   // a boolean to determine if we have same iVer
+  int idFound;
+  while (match==0){
+    printf("iVer1, iVer2 : %d, %d\n", iVer1, iVer2);
+    idFound = hash_find(hsh, iVer1, iVer2, keyMode);
+    printf("idFound = %d\n", idFound);
+    if (idFound == 0){printf("Error: Cannot delete hash element because it is not found\n");}
+    if (iVer1 == hsh->LstObj[idFound][0] && iVer2 == hsh->LstObj[idFound][1])
+    {match=1;}
+    else
+    {idFound = hsh->LstObj[idFound][4];}
+    printf("idFound = %d\n", idFound);
+    if (iVer1 == hsh->LstObj[idFound][0] && iVer2 == hsh->LstObj[idFound][1]){match=1;}
+    printf("Press Enter to continue debugging...\n");
+    getchar();
+  }
+
+  int id = hsh->Head[key%hsh->SizHead];
+  while (id != 0){
+    if (hsh->LstObj[id][4] == 0){   // Entry has only one element
+      hsh->Head[key%hsh->SizHead] = 0;
+      hsh->LstObj[idFound][0] = 0;hsh->LstObj[idFound][1] = 0;
+      hsh->LstObj[idFound][2] = 0;hsh->LstObj[idFound][3] = 0; hsh->LstObj[idFound][4] = 0;
+      return 0;
+    }
+    else if (hsh->LstObj[id][4] == idFound){
+      hsh->LstObj[id][4] = hsh->LstObj[idFound][4];     // skip idFound
+      hsh->LstObj[idFound][0] = 0;hsh->LstObj[idFound][1] = 0;
+      hsh->LstObj[idFound][2] = 0;hsh->LstObj[idFound][3] = 0; hsh->LstObj[idFound][4] = 0;
+      //hsh->NbrObj --;
+      return 0;
+    }
+    else {
+      id = hsh->LstObj[id][4];
+    }
+  }
+
+  printf("Error: Cannot delete element from hash table\n");
 	return 0;
 }
 
@@ -831,6 +880,34 @@ void write_Crd_to_file(const char *filename, Mesh *Msh) {
 
     fclose(fp);
     printf("[Output File] Vertex coordinates written to %s\n", filename);
+}
+
+void write_Tri_to_file(const char *filename, Mesh *Msh) {
+  if (!Msh || !Msh->Tri) {
+      printf("Error: Mesh or Triangles (Tri) not initialized.\n");
+      return;
+  }
+
+  FILE *fp = fopen(filename, "w");
+  if (!fp) {
+      printf("Error: Cannot open file %s for writing.\n", filename);
+      return;
+  }
+
+  fprintf(fp, "Triangles\n");
+  fprintf(fp, "Total: %d\n", Msh->NbrTri);
+  fprintf(fp, "Triangle_ID    Vertex1    Vertex2    Vertex3\n");
+
+  for (int i = 1; i <= Msh->NbrTri; i++) {
+      fprintf(fp, "%d    %d    %d    %d\n", 
+              i, 
+              Msh->Tri[i][0], 
+              Msh->Tri[i][1], 
+              Msh->Tri[i][2]);
+  }
+
+  fclose(fp);
+  printf("[Output File] Triangles written to %s\n", filename);
 }
 
 
