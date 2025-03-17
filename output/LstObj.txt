@@ -1,6 +1,6 @@
 LstObj
 Object_ID    Vertex1    Vertex2    Triangle1    Triangle2    Next
-1    12    14    1    2    0
+1    0    0    0    0    0
 2    14    11    1    1    0
 3    11    12    1    2    0
 4    13    14    2    0    0

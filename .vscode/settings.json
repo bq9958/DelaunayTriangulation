@@ -3,6 +3,7 @@
         "cmath": "c",
         "complex": "c",
         "mesh.h": "c",
-        "*.tcc": "c"
+        "*.tcc": "c",
+        "thread": "c"
     }
 }
