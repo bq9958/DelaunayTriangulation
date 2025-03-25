@@ -98,7 +98,7 @@ int    msh_boundingbox(Mesh *Msh);         // compute the bouding box of the mes
 HashTable * msh_neighbors(Mesh *Msh, const char* keyMode);           // build TriVoi with a hash table                 
 int    msh_neighborsQ2(Mesh *Msh);         // build TriVoi with the naive quadratic approach 
 int    msh_quality(Mesh *Msh, double *Qal, int mode); // compute the quality of the mesh triangles
-
+void msh_free(Mesh *Msh);
 
 //--- Implementing the following function should be necessary 
 HashTable * hash_init(int SizHead, int NbrMaxObj);          // alloc and set htable ==> allocate Head, LstObj 
@@ -106,7 +106,7 @@ HashTable * hash_init(int SizHead, int NbrMaxObj);          // alloc and set hta
 int hash_find(HashTable *hsh, int iVer1, int iVer2, const char* keyMode);            // return the id found (in LstObj ), if 0 the object is not in the list 
 int hash_add (HashTable *hsh, int iVer1, int iVer2, int iTri, int iEdg, const char* keyMode);  // ==> add this entry in the hash tab 
 int hash_suppr(HashTable *hsh, int iVer1, int iVer2, const char* keyMode);  // ==> suppress this entry in the hash tab 
-
+void hash_free(HashTable *hsh);
 
 //--- Tool functions
 double distance(double x1, double y1, double x2, double y2);

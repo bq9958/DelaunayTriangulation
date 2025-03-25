@@ -238,7 +238,7 @@ int msh_boundingbox(Mesh *Msh)
   double dx, dy;
 
   //--- compute bounding box 
-  for (iVer=1; iVer<=Msh->NbrVer; iVer++) {
+  for (iVer=1; iVer<=Msh->NbrVer+4; iVer++) {
     // TODO: Set Msh->Box  
     if (Msh->Crd[iVer][0] < Msh->Box[0]) Msh->Box[0] = Msh->Crd[iVer][0];
     if (Msh->Crd[iVer][0] > Msh->Box[1]) Msh->Box[1] = Msh->Crd[iVer][0];
@@ -250,10 +250,10 @@ int msh_boundingbox(Mesh *Msh)
   Msh->Box[0] = Msh->Box[0] - 0.5*dx; Msh->Box[1] = Msh->Box[1] + 0.5*dx;
   Msh->Box[2] = Msh->Box[2] - 0.5*dy; Msh->Box[3] = Msh->Box[3] + 0.5*dy;
   printf("  Bounding box: xmin %f xmax %f ymin %f ymax %f \n", Msh->Box[0], Msh->Box[1], Msh->Box[2], Msh->Box[3]);
-  Msh->Crd[Msh->NbrVer+1][0] = Msh->Box[0]; Msh->Crd[Msh->NbrVer+1][1] = Msh->Box[3]; // (xmin, ymax)
-  Msh->Crd[Msh->NbrVer+2][0] = Msh->Box[1]; Msh->Crd[Msh->NbrVer+2][1] = Msh->Box[3]; // (xmax, ymax)
-  Msh->Crd[Msh->NbrVer+3][0] = Msh->Box[1]; Msh->Crd[Msh->NbrVer+3][1] = Msh->Box[2]; // (xmax, ymin)
-  Msh->Crd[Msh->NbrVer+4][0] = Msh->Box[0]; Msh->Crd[Msh->NbrVer+4][1] = Msh->Box[2]; // (xmin, ymin)
+  Msh->Crd[1][0] = Msh->Box[0]; Msh->Crd[1][1] = Msh->Box[3]; // (xmin, ymax)
+  Msh->Crd[2][0] = Msh->Box[0]; Msh->Crd[2][1] = Msh->Box[2]; // (xmin, ymin)
+  Msh->Crd[3][0] = Msh->Box[1]; Msh->Crd[3][1] = Msh->Box[2]; // (xmax, ymin)
+  Msh->Crd[4][0] = Msh->Box[1]; Msh->Crd[4][1] = Msh->Box[3]; // (xmax, ymax)
 
   return 1;
 }
@@ -950,5 +950,34 @@ int compute_NbrEdgBoudry(Mesh *Msh)
   
   return NbrEdg;
 }
+
+void msh_free(Mesh *Msh)
+{
+    if (!Msh) return;
+
+    if (Msh->Crd) free(Msh->Crd);
+    if (Msh->Tri) free(Msh->Tri);
+    if (Msh->TriRef) free(Msh->TriRef);
+    if (Msh->TriVoi) free(Msh->TriVoi);
+
+    if (Msh->Efr) free(Msh->Efr);
+    if (Msh->EfrVoi) free(Msh->EfrVoi);
+    if (Msh->EfrRef) free(Msh->EfrRef);
+
+    if (Msh->Edg) free(Msh->Edg);
+
+    free(Msh);
+}
+
+void hash_free(HashTable *hsh)
+{
+    if (!hsh) return;
+
+    if (hsh->Head) free(hsh->Head);
+    if (hsh->LstObj) free(hsh->LstObj);
+
+    free(hsh);
+}
+
 
 

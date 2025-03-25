@@ -1,43 +1,74 @@
 #include <triangulation.h>
 
 //////////// Global varialbes //////////
-int SizPil = 20;
+int SizPil = 20;       // cavity Tri Number max
 const char *keyMode = "sum";
 
 int main(int argc, char *argv[])
 {
     //////// Mesh Definition //////
     Mesh *Msh = msh_init();
-    Msh->NbrVer = 10;
+    Msh->NbrVer = 50;
     int SizTri = 4*Msh->NbrVer;   
     Msh->Crd = TestPointSet(Msh->NbrVer);
     Msh->Tri = (int3d *)malloc((SizTri + 1) * sizeof(int3d));      // le tableau actif
     Msh->TriVoi = (int3d *)malloc((SizTri + 1) * sizeof(int3d));
-    int *pile = (int *)malloc(SizPil * sizeof(int));         // la pile
+    
     
     //////// Hash Table Definition ////////
-    HashTable *hsh;
-    
+    HashTable *hsh = hash_init(0.8*SizTri, 3*SizTri+1);
+
     
     //////// Other constants /////////
-    int move = 1; int step = 0;
+    int iTriLocLast = 0;
 
 
     //////// Initialize the bounding box /////////
+    // leave speace to insert bounding box points
+    for (int i=Msh->NbrVer; i>=1; i--)
+    {
+        Msh->Crd[i+4][0] = Msh->Crd[i][0];
+        Msh->Crd[i+4][1] = Msh->Crd[i][1];
+        Msh->Crd[i][0] = 0;
+        Msh->Crd[i][1] = 0;
+    }
     msh_boundingbox(Msh);
-    Msh->Tri[1][0] = Msh->NbrVer+1; Msh->Tri[1][1] = Msh->NbrVer+2; Msh->Tri[1][2] = Msh->NbrVer+4;
-    Msh->Tri[2][0] = Msh->NbrVer+2; Msh->Tri[2][1] = Msh->NbrVer+3; Msh->Tri[2][2] = Msh->NbrVer+4;
+    Msh->Tri[1][0] = 1; Msh->Tri[1][1] = 2; Msh->Tri[1][2] = 4;
+    Msh->Tri[2][0] = 2; Msh->Tri[2][1] = 3; Msh->Tri[2][2] = 4;
     Msh->NbrTri += 2;
 
-    hsh = msh_neighbors(Msh, keyMode);
+    Msh->TriVoi[1][0] = 2; Msh->TriVoi[1][1] = 0; Msh->TriVoi[1][2] = 0;
+    Msh->TriVoi[2][0] = 1; Msh->TriVoi[2][1] = 0; Msh->TriVoi[2][2] = 0;
+
+    write_Tri_to_file("../output/Tri.txt", Msh);
+    save_triangulation_to_file("../output/triangulation.mesh", Msh, hsh);
+    save_test_points_to_file("../output/test_points.txt", Msh);
 
     
-    ///////// Test session ////////
-
+    // ///////// Test session ////////
+    for (int iPtIns = 1; iPtIns<=Msh->NbrVer; iPtIns++)
+    {
+        // printf("[[--------iPtIns-------]] = %d\n", iPtIns);
+        // printf("Press Enter to continue, or 'q' then Enter to quit: ");
+        // char ch = getchar();
+        // if (ch == 'q' || ch == 'Q') {
+        //     printf("Exiting loop early at iPtIns = %d\n", iPtIns);
+        //     break;
+        // }
+        // while (ch != '\n' && ch != EOF) {
+        //     ch = getchar();
+        // }
+        Cavity(Msh, hsh, iPtIns, &iTriLocLast);
+    }
 
     ////////// Output /////////
     write_LstObj_to_file("../output/LstObj.txt", hsh);
     write_Tri_to_file("../output/Tri.txt", Msh);
     write_TriVoi_to_file("../output/TriVoi.txt", Msh);
-    save_triangulation_to_file("../output/triangulation.txt", Msh, hsh);
+    save_triangulation_to_file("../output/triangulation.mesh", Msh, hsh);
+    write_TriVoi_to_file("../output/TriVoi.txt", Msh);
+
+    // ///////// Free memory ////////
+    msh_free(Msh);
+    hash_free(hsh);
 }
