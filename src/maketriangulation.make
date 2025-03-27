@@ -1,7 +1,7 @@
 #
 CC=gcc
-#COPTS= -O2 -Wall
-COPTS = -g -Wall
+COPTS= -O2 -Wall
+#COPTS = -g -Wall
 BUILD_DIR=../build
 
 $(shell mkdir -p $(BUILD_DIR))
@@ -39,7 +39,7 @@ $(BUILD_DIR)/triangulation.o : triangulation.c triangulation.h mesh.h
 $(BUILD_DIR)/eigen.o : eigen.c mesh.h 
 	$(CC) -c $(COPTS) -I. eigen.c -o $(BUILD_DIR)/eigen.o
 
-$(BUILD_DIR)/main_triangulation.o : main_triangulation.c triangulation.h
+$(BUILD_DIR)/main_triangulation.o : main_triangulation.c triangulation.h dynamicArray.h
 	$(CC) -c $(COPTS) -I. main_triangulation.c -o $(BUILD_DIR)/main_triangulation.o  
 
 clean :

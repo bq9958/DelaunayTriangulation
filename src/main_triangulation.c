@@ -1,18 +1,18 @@
 #include <triangulation.h>
 
 //////////// Global varialbes //////////
-int SizPil = 20;       // cavity Tri Number max
+int SizPil = 30;       // cavity Tri Number max
 const char *keyMode = "sum";
 
 int main(int argc, char *argv[])
 {
     //////// Mesh Definition //////
     Mesh *Msh = msh_init();
-    Msh->NbrVer = 50;
+    Msh->NbrVer = 1500;
     int SizTri = 4*Msh->NbrVer;   
-    Msh->Crd = TestPointSet(Msh->NbrVer);
-    Msh->Tri = (int3d *)malloc((SizTri + 1) * sizeof(int3d));      // le tableau actif
-    Msh->TriVoi = (int3d *)malloc((SizTri + 1) * sizeof(int3d));
+    Msh->Crd = TestPointSet(Msh->NbrVer, 0, 1, 0, 1);
+    Msh->Tri = (int3d *)calloc(SizTri + 1, sizeof(int3d));      // le tableau actif
+    Msh->TriVoi = (int3d *)calloc(SizTri + 1, sizeof(int3d));
     
     
     //////// Hash Table Definition ////////

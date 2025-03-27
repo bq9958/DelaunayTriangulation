@@ -1,21 +1,21 @@
 #include <triangulation.h>
 
 extern int SizPil;
-extern const char *keyMode;    // TODO : 删除多余keyMode
+extern const char *keyMode;    
 
 void Cavity(Mesh *Msh, HashTable *hsh, int iPtIns, int *iTriLocLast)
 {
     printf("--------------Begin Cavity-------------\n");
     ////////// Initialization //////////
-    dynamArr *PilElt = dyArr_init(SizPil, 1);
-    dynamArr *PilEdg = dyArr_init(2*SizPil, 2);
+    dynamArr *PilElt = dyArr_init(SizPil, 1, INT);
+    dynamArr *PilEdg = dyArr_init(2*SizPil, 2, INT);
     int ptrCur = 0; int ptrNxt = 1;
     int move = 0; int iTri = 0;
     
     ////////// Localisation ///////////
     printf("--------------Begin location-------------\n");
     if (*iTriLocLast == 0)
-        iTri = (rand()%(Msh->NbrTri-1) + 1);            // TODO : 优化初始iTri选择
+        iTri = (rand()%(Msh->NbrTri-1) + 1);          
     else 
         iTri = *iTriLocLast;
     printf("iTri = %d\n", iTri);
@@ -46,7 +46,7 @@ void Cavity(Mesh *Msh, HashTable *hsh, int iPtIns, int *iTriLocLast)
         {
             jTri = Msh->TriVoi[depile][iEdglocal];
             printf("jTri = %d\n", jTri);
-            printf("Press Enter to continue\n");
+            //printf("Press Enter to continue\n");
             printf("PilElt[0] = %d, PilElt[1] = %d\n", PilElt->data1d[0], PilElt->data1d[1]);
             //getchar();
             if (! dyArr_ifInArr(PilElt, jTri, 0)){
@@ -75,8 +75,9 @@ void Cavity(Mesh *Msh, HashTable *hsh, int iPtIns, int *iTriLocLast)
         }
     }
 
+    printf("PilEdg->SizCur = %d\n", PilEdg->SizCur);
     dynamArr *tmp = dyArr_sort_circle(PilEdg);    // sort the edges in a circle
-    dyArr_free(PilEdg);
+    //dyArr_free(PilEdg);
     PilEdg = tmp;
     printf("-------- PilEdg after sort ---------\n");
     dyArr_print(PilEdg);
@@ -96,7 +97,7 @@ void Cavity(Mesh *Msh, HashTable *hsh, int iPtIns, int *iTriLocLast)
 
     ////////////// Add new vertices and triangles //////////////
     printf("--------------Begin Add new vertices and triangles-------------\n");
-    dynamArr *CavTri = dyArr_init(SizPil, 1);    // stocker iTri dans la cavité
+    dynamArr *CavTri = dyArr_init(SizPil*3, 1, INT);    // stocker iTri dans la cavité //TODO: Size control
     for (int i=0; i < PilEdg->SizCur; i++)
     {
         Msh->NbrTri ++;
@@ -116,7 +117,7 @@ void Cavity(Mesh *Msh, HashTable *hsh, int iPtIns, int *iTriLocLast)
             if (id == 0) { printf("Note: Cannot find Edge 0 in hsh\n");}
             else { hsh->LstObj[id][2] = PilElt->data1d[i];}
 
-            dyArr_addElement(CavTri, PilElt->data1d[i], 0);
+            dyArr_addElement_INT(CavTri, PilElt->data1d[i], 0);
             printf("-- CavTri -- : \n");
             dyArr_print(CavTri);
             printf("-- end CavTri --\n");
@@ -148,7 +149,7 @@ void Cavity(Mesh *Msh, HashTable *hsh, int iPtIns, int *iTriLocLast)
             int id = hash_find_modified(hsh, Msh->Tri[Msh->NbrTri][1], Msh->Tri[Msh->NbrTri][2], keyMode);
             if (id == 0) { printf("Note: Cannot find Edge 0 in hsh\n");}
             else { hsh->LstObj[id][2] = Msh->NbrTri;}
-            dyArr_addElement(CavTri, Msh->NbrTri, 0); 
+            dyArr_addElement_INT(CavTri, Msh->NbrTri, 0); 
             printf("-- CavTri -- : \n");
             dyArr_print(CavTri);
             printf("-- end CavTri --\n");
@@ -190,10 +191,10 @@ void Cavity(Mesh *Msh, HashTable *hsh, int iPtIns, int *iTriLocLast)
         }
     }
     printf("--------------End Add new vertices and triangles-------------\n");
+    printf("-------------- End iPtIns = %d -------------\n", iPtIns);
 
-
-    dyArr_export_to_file(PilElt, "../output/PilElt.txt");
-    dyArr_export_to_file(PilEdg, "../output/PilEdg.txt");
+    //dyArr_export_to_file(PilElt, "../output/PilElt.txt");
+    //dyArr_export_to_file(PilEdg, "../output/PilEdg.txt");
 
     dyArr_free(PilElt);
     dyArr_free(PilEdg);
@@ -230,7 +231,7 @@ int location(Mesh *Msh, int iTri, double x, double y, int *move)
 
     while (1) {
         (*move)++;
-        if (*move > 4 * Msh->NbrVer) {
+        if (*move > Msh->NbrTri) {    //TODO : Optimize
             printf("Error: Too many moves\n");
             return -1;
         }
@@ -295,7 +296,7 @@ int inTriangle(double x0, double y0, double x1, double y1, double x2, double y2,
 }
 
 
-double2d *TestPointSet(int NbrPts)
+double2d *TestPointSet(int NbrPts, double xmin, double xmax, double ymin, double ymax)
 {
     srand(NbrPts);
 
@@ -308,8 +309,10 @@ double2d *TestPointSet(int NbrPts)
     }
 
     for (int i = 1; i <= NbrPts; i++) {
-        Pts[i][0] = (double)rand() / RAND_MAX;
-        Pts[i][1] = (double)rand() / RAND_MAX;
+        double x = (double)rand() / RAND_MAX ;
+        double y = (double)rand() / RAND_MAX ;
+        Pts[i][0] = xmin + x * (xmax - xmin);
+        Pts[i][1] = ymin + y * (ymax - ymin);
     }
 
     return Pts;
@@ -407,20 +410,20 @@ void addTwoOtherSides(Mesh *Msh, int iTri, int iVerComLocal1, int iVerComLocal2,
     int iVerResteGl = Msh->Tri[iTri][iVerReste];  // global index
     if (iVerReste == 1){
         if (!dyArr_ifInArr(PilEdg, iVerMinGl, iVerResteGl) && !dyArr_ifInArr(PilEdg, iVerResteGl, iVerMaxGl)){
-            dyArr_addElement(PilEdg, iVerMinGl, iVerResteGl);   // 0 -> 1
-            dyArr_addElement(PilEdg, iVerResteGl, iVerMaxGl);   // 1 -> 2
+            dyArr_addElement_INT(PilEdg, iVerMinGl, iVerResteGl);   // 0 -> 1
+            dyArr_addElement_INT(PilEdg, iVerResteGl, iVerMaxGl);   // 1 -> 2
         }
     }
     else if (iVerReste == 2){
         if (!dyArr_ifInArr(PilEdg, iVerMaxGl, iVerResteGl) && !dyArr_ifInArr(PilEdg, iVerResteGl, iVerMinGl)){
-            dyArr_addElement(PilEdg, iVerMaxGl, iVerResteGl);   // 1 -> 2
-            dyArr_addElement(PilEdg, iVerResteGl, iVerMinGl);   // 2 -> 0
+            dyArr_addElement_INT(PilEdg, iVerMaxGl, iVerResteGl);   // 1 -> 2
+            dyArr_addElement_INT(PilEdg, iVerResteGl, iVerMinGl);   // 2 -> 0
         }
     }
     else if (iVerReste == 0){
         if (!dyArr_ifInArr(PilEdg, iVerResteGl, iVerMaxGl) && !dyArr_ifInArr(PilEdg, iVerMinGl, iVerMaxGl)){
-            dyArr_addElement(PilEdg, iVerMaxGl, iVerResteGl);     // 2 -> 0
-            dyArr_addElement(PilEdg, iVerResteGl, iVerMinGl);   // 0 -> 1
+            dyArr_addElement_INT(PilEdg, iVerMaxGl, iVerResteGl);     // 2 -> 0
+            dyArr_addElement_INT(PilEdg, iVerResteGl, iVerMinGl);   // 0 -> 1
         }
     }
 }

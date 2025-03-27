@@ -239,7 +239,6 @@ int msh_boundingbox(Mesh *Msh)
 
   //--- compute bounding box 
   for (iVer=1; iVer<=Msh->NbrVer+4; iVer++) {
-    // TODO: Set Msh->Box  
     if (Msh->Crd[iVer][0] < Msh->Box[0]) Msh->Box[0] = Msh->Crd[iVer][0];
     if (Msh->Crd[iVer][0] > Msh->Box[1]) Msh->Box[1] = Msh->Crd[iVer][0];
     if (Msh->Crd[iVer][1] < Msh->Box[2]) Msh->Box[2] = Msh->Crd[iVer][1];
@@ -337,7 +336,6 @@ int msh_neighborsQ2(Mesh *Msh)
           jVer1 = Msh->Tri[jTri][ tri2edg[jEdg][0] ];
           jVer2 = Msh->Tri[jTri][ tri2edg[jEdg][1] ];
           
-          // TODO: compare the 4 points 
           if ((iVer1 == iVer2 && jVer1 == jVer2) || (iVer1 == jVer2 && iVer2 == jVer1)) {
           //       set the neighbors Msh->TriVoi if both edges match
           Msh->TriVoi[iTri][iEdg] = jTri;
@@ -386,7 +384,6 @@ HashTable * msh_neighbors(Mesh *Msh, const char* keyMode)
 
       if (boolEfr == 1) continue;
 
-      // TODO:
       // compute the key   
       // do we have objects as that key   hash_find () */
       //  if yes ===> look among objects and potentially update TriVoi */
