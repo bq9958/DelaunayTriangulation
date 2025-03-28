@@ -3,7 +3,7 @@
 extern const char *pixelSignifMode;
 extern const int m, n;
 
-double computePSNR(Mesh *MshInit, Mesh *MshDel, double *solInit, double *solInterp, double *solPSNR)
+double computePSNR(Mesh *MshInit, Mesh *MshDel, double *solInit, double *solInterp, double *solQC)
 {
     printf("[[ Begin computePSNR ]]\n");
     double x, y; 
@@ -30,12 +30,12 @@ double computePSNR(Mesh *MshInit, Mesh *MshDel, double *solInit, double *solInte
         uc = beta0 * solInterp[MshDel->Tri[iTriLoc][0]] + beta1 * solInterp[MshDel->Tri[iTriLoc][1]]\ 
                                                         + beta2 * solInterp[MshDel->Tri[iTriLoc][2]];
         
-        solPSNR[i] = (u - uc) * (u - uc) / MshInit->NbrVer;
+        solQC[i] = (u - uc) * (u - uc) / MshInit->NbrVer;
         qc += (u - uc) * (u - uc) / MshInit->NbrVer;
     }
     PSNR = 10 * log10(255*255 / qc);
-    msh_write2dfield_Vertices("../output/solPSNR.sol", MshInit->NbrVer, solPSNR);
-    printf("[Output File] PSNR solution written in solPSNR.sol \n");
+    msh_write2dfield_Vertices("../output/solQC.sol", MshInit->NbrVer, solQC);
+    printf("[Output File] PSNR solution written in solQC.sol \n");
 
     return PSNR;
 }

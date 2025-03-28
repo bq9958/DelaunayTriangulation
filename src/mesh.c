@@ -402,8 +402,8 @@ HashTable * msh_neighbors(Mesh *Msh, const char* keyMode)
 
   printf("  Nbr edges hash %10d \n", hsh->NbrObj);
   
-  write_Head_to_file("../output/Head.txt", hsh);
-  write_LstObj_to_file("../output/LstObj.txt", hsh);
+  //write_Head_to_file("../output/Head.txt", hsh);
+  //write_LstObj_to_file("../output/LstObj.txt", hsh);
 
   return hsh;
 }   

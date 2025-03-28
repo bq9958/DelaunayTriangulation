@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
 {
     //////// Mesh Definition //////
     Mesh *Msh = msh_init();
-    Msh->NbrVer = 2395;
+    Msh->NbrVer = 1000;
     int SizTri = 4*Msh->NbrVer;   
     Msh->Crd = TestPointSet(Msh->NbrVer, 0, 1, 0, 1);
     Msh->Tri = (int3d *)calloc(SizTri + 1, sizeof(int3d));      // le tableau actif
