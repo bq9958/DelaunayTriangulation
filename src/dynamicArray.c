@@ -54,7 +54,7 @@ void dyArr_deleteElement(dynamArr *dyArr, int id)     // delete element at posit
     if (dyArr->dim == 1)
     {
         if (id < 0 || id >= dyArr->MaxSiz) {
-            printf("Error : Out of Bound when deleting element\n");
+            LOG_ERROR("Out of Bound when deleting element\n");
             return;
         }
         
@@ -69,7 +69,7 @@ void dyArr_deleteElement(dynamArr *dyArr, int id)     // delete element at posit
     else if (dyArr->dim == 2)
     {
         if (id < 0 || id >= dyArr->MaxSiz) {
-            printf("Error : Out of Bound when deleting element\n");
+            LOG_ERROR("Out of Bound when deleting element\n");
             return;
         }
         
@@ -86,13 +86,14 @@ void dyArr_deleteElement(dynamArr *dyArr, int id)     // delete element at posit
 
 void dyArr_addElement_DOUBLE(dynamArr *dyArr, double element1, double element2) // for DOUBLE
 {
-    if (dyArr_auto_resize(dyArr) < 0) {
+    int resize = dyArr_auto_resize(dyArr);
+    if (resize < 0) {
         fprintf(stderr, "Resize failed!\n");
         return;
     }
 
     if (dyArr->SizCur >= dyArr->MaxSiz) {
-        printf("Error: Array is full, cannot add more elements!\n");
+        LOG_ERROR("Array is full, cannot add more elements!\n");
         return;
     }
 
@@ -114,7 +115,7 @@ void dyArr_addElement_INT(dynamArr *dyArr, int element1, int element2) // for IN
     }
 
     if (dyArr->SizCur >= dyArr->MaxSiz) {
-        printf("Error: Array is full, cannot add more elements!\n");
+        LOG_ERROR("Array is full, cannot add more elements!\n");
         return;
     }
 
@@ -156,7 +157,7 @@ void dyArr_export_to_file(dynamArr *dyArr, const char *filename)
 {
     FILE *fp = fopen(filename, "w");
     if (!fp) {
-        printf("Error: Cannot open file %s for writing!\n", filename);
+        LOG_ERROR("Cannot open file %s for writing!\n", filename);
         return;
     }
 
@@ -238,7 +239,7 @@ void dyArr_print(dynamArr *dyArr)
 dynamArr *dyArr_sort_circle(dynamArr *list_to_sort)    //! only for INT
 {
     if (list_to_sort->dim == 1)
-        printf(" Warning: The input list is 1D !\n");
+        LOG_ERROR("The input list is 1D !\n");
     else if (list_to_sort->dim == 2)
     {
         int *used = calloc(list_to_sort->MaxSiz, sizeof(int));
@@ -277,44 +278,44 @@ void dyArr_free(dynamArr *dyArr) {
     free(dyArr);
 }
 
-int dyArr_auto_resize(dynamArr* arr) 
+int dyArr_auto_resize(dynamArr* dyArr) 
 {
-    if (arr->SizCur < arr->MaxSiz)
+    if (dyArr->SizCur < dyArr->MaxSiz)
         return 0; 
 
-    int newSize = arr->MaxSiz * 2;
+    int newSize = dyArr->MaxSiz * 2;
     if (newSize == 0) newSize = 4;
 
-    if (arr->dim == 1) {
-        if (arr->type == INT) {
-            int* newData = realloc(arr->data1d, newSize * sizeof(int));
+    if (dyArr->dim == 1) {
+        if (dyArr->type == INT) {
+            int* newData = realloc(dyArr->data1d, newSize * sizeof(int));
             if (!newData) return -1;
-            arr->data1d = newData;
-        } else if (arr->type == DOUBLE) {
-            double* newData = realloc(arr->data1d, newSize * sizeof(double));
+            dyArr->data1d = newData;
+        } else if (dyArr->type == DOUBLE) {
+            double* newData = realloc(dyArr->data1dd, newSize * sizeof(double));
             if (!newData) return -1;
-            arr->data1dd = newData;
+            dyArr->data1dd = newData;
         } else {
             return -2;
         }
     }
 
-    else if (arr->dim == 2) {
-        if (arr->type == INT) {
-            int (*oldData)[2] = arr->data2d;
-            int (*newData)[2] = realloc(oldData, newSize * sizeof(int[2]));
+    else if (dyArr->dim == 2) {
+        if (dyArr->type == INT) {
+            int2d *oldData = dyArr->data2d;
+            int2d *newData = realloc(oldData, newSize * sizeof(int2d));
             if (!newData) return -1;
-            arr->data2d = (void**)newData;
-        } else if (arr->type == DOUBLE) {
-            double (*oldData)[2] = arr->data2d;
-            double (*newData)[2] = realloc(oldData, newSize * sizeof(double[2]));
+            dyArr->data2d = newData;
+        } else if (dyArr->type == DOUBLE) {
+            double2d *oldData = dyArr->data2dd;
+            double2d *newData = realloc(oldData, newSize * sizeof(double2d));
             if (!newData) return -1;
-            arr->data2dd = (void**)newData;
+            dyArr->data2dd = newData;
         } else {
             return -2; 
         }
     }
 
-    arr->MaxSiz = newSize;
+    dyArr->MaxSiz = newSize;
     return 1;  
 }

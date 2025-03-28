@@ -5,24 +5,24 @@ extern const char *keyMode;
 
 void Cavity(Mesh *Msh, HashTable *hsh, int iPtIns, int *iTriLocLast)
 {
-    printf("--------------Begin Cavity-------------\n");
+    debug_printf("--------------Begin Cavity-------------\n");
     ////////// Initialization //////////
     dynamArr *PilElt = dyArr_init(SizPil, 1, INT);
-    dynamArr *PilEdg = dyArr_init(2*SizPil, 2, INT);
+    dynamArr *PilEdg = dyArr_init(3*SizPil, 2, INT);
     int ptrCur = 0; int ptrNxt = 1;
     int move = 0; int iTri = 0;
     
     ////////// Localisation ///////////
-    printf("--------------Begin location-------------\n");
+    debug_printf("--------------Begin location-------------\n");
     if (*iTriLocLast == 0)
         iTri = (rand()%(Msh->NbrTri-1) + 1);          
     else 
         iTri = *iTriLocLast;
-    printf("iTri = %d\n", iTri);
+    debug_printf("iTri = %d\n", iTri);
     int TriPtIns = location(Msh, iTri, Msh->Crd[4+iPtIns][0], Msh->Crd[4+iPtIns][1], &move);
     *iTriLocLast = TriPtIns;
-    printf("iTriLocLast = %d\n", *iTriLocLast);
-    printf("TriPtIns = %d\n", TriPtIns);
+    debug_printf("iTriLocLast = %d\n", *iTriLocLast);
+    debug_printf("TriPtIns = %d\n", TriPtIns);
     PilElt->data1d[0] = TriPtIns; PilElt->SizCur = 1;
     PilEdg->data2d[0][0] = Msh->Tri[TriPtIns][1]; 
     PilEdg->data2d[0][1] = Msh->Tri[TriPtIns][2]; PilEdg->SizCur ++;
@@ -32,7 +32,7 @@ void Cavity(Mesh *Msh, HashTable *hsh, int iPtIns, int *iTriLocLast)
     PilEdg->data2d[2][1] = Msh->Tri[TriPtIns][1]; PilEdg->SizCur ++;
 
     ////////// Stack loop ////////////
-    printf("--------------Begin Stack loop-------------\n");
+    debug_printf("--------------Begin Stack loop-------------\n");
     int depile, jTri;
     int iVerCom1, iVerCom2, iVerComLocal1, iVerComLocal2;
     double x0, y0, x1, y1, x2, y2;
@@ -40,14 +40,14 @@ void Cavity(Mesh *Msh, HashTable *hsh, int iPtIns, int *iTriLocLast)
     while (ptrCur < ptrNxt)
     {
         depile = PilElt->data1d[ptrCur]; ptrCur ++;
-        printf("ptrCur = %d\n", ptrCur);
-        printf("depile = %d\n", depile);
+        debug_printf("ptrCur = %d\n", ptrCur);
+        debug_printf("depile = %d\n", depile);
         for (int iEdglocal=0; iEdglocal < 3; iEdglocal++)
         {
             jTri = Msh->TriVoi[depile][iEdglocal];
-            printf("jTri = %d\n", jTri);
-            //printf("Press Enter to continue\n");
-            printf("PilElt[0] = %d, PilElt[1] = %d\n", PilElt->data1d[0], PilElt->data1d[1]);
+            debug_printf("jTri = %d\n", jTri);
+            //debug_printf("Press Enter to continue\n");
+            debug_printf("PilElt[0] = %d, PilElt[1] = %d\n", PilElt->data1d[0], PilElt->data1d[1]);
             //getchar();
             if (! dyArr_ifInArr(PilElt, jTri, 0)){
                 x0 = Msh->Crd[Msh->Tri[jTri][0]][0]; y0 = Msh->Crd[Msh->Tri[jTri][0]][1];
@@ -55,54 +55,62 @@ void Cavity(Mesh *Msh, HashTable *hsh, int iPtIns, int *iTriLocLast)
                 x2 = Msh->Crd[Msh->Tri[jTri][2]][0]; y2 = Msh->Crd[Msh->Tri[jTri][2]][1];
                 if (inCircumcircle(x0, y0, x1, y1, x2, y2, x, y)) 
                 {
-                    printf("[inCircumcircle]\n");
+                    debug_printf("[inCircumcircle]\n");
                     PilElt->data1d[ptrNxt] = jTri; PilElt->SizCur ++; ptrNxt ++;
-                    printf("ptrNxt = %d\n", ptrNxt);
+                    debug_printf("ptrNxt = %d\n", ptrNxt);
                     areteCommune(Msh, depile, jTri, &iVerCom1, &iVerCom2, &iVerComLocal1, &iVerComLocal2); // index for jTri
-                    printf("iVerCom1 = %d, iVerCom2 = %d\n", iVerCom1, iVerCom2);
-                    printf("iVerComLocal1 = %d, iVerComLocal2 = %d\n", iVerComLocal1, iVerComLocal2);
-                    printf("------- PilEdg before suppr ---------\n");
-                    dyArr_print(PilEdg);
+                    debug_printf("iVerCom1 = %d, iVerCom2 = %d\n", iVerCom1, iVerCom2);
+                    debug_printf("iVerComLocal1 = %d, iVerComLocal2 = %d\n", iVerComLocal1, iVerComLocal2);
+                    debug_printf("------- PilEdg before suppr ---------\n");
+                    #if LOG_LEVEL == 4
+                        dyArr_print(PilEdg);
+                    #endif
                     supprAreteCom(iVerCom1, iVerCom2, PilEdg);
-                    printf("------- PilEdg after suppr ---------\n");
-                    dyArr_print(PilEdg);
-                    printf("-------- PilEdg after add ---------\n");
+                    debug_printf("------- PilEdg after suppr ---------\n");
+                    #if LOG_LEVEL == 4
+                        dyArr_print(PilEdg);
+                    #endif
+                    debug_printf("-------- PilEdg after add ---------\n");
                     addTwoOtherSides(Msh, jTri, iVerComLocal1, iVerComLocal2, PilEdg);
-                    dyArr_print(PilEdg);
-                    printf("\n");
+                    #if LOG_LEVEL == 4
+                        dyArr_print(PilEdg);
+                    #endif
+                    debug_printf("\n");
                 }
             }
         }
     }
 
-    printf("PilEdg->SizCur = %d\n", PilEdg->SizCur);
+    debug_printf("PilEdg->SizCur = %d\n", PilEdg->SizCur);
     dynamArr *tmp = dyArr_sort_circle(PilEdg);    // sort the edges in a circle
-    //dyArr_free(PilEdg);
+    dyArr_free(PilEdg);
     PilEdg = tmp;
-    printf("-------- PilEdg after sort ---------\n");
-    dyArr_print(PilEdg);
+    debug_printf("-------- PilEdg after sort ---------\n");
+    #if LOG_LEVEL == 4
+        dyArr_print(PilEdg);
+    #endif
 
-    printf("-----------------End Stack loop-----------------\n");
+    debug_printf("-----------------End Stack loop-----------------\n");
 
     ////////// Delete the triangles in the cavity //////////
-    printf("--------------Begin Delete the triangles in the cavity-------------\n");
-    printf("PilElt->SizCur = %d\n", PilElt->SizCur);
+    debug_printf("--------------Begin Delete the triangles in the cavity-------------\n");
+    debug_printf("PilElt->SizCur = %d\n", PilElt->SizCur);
     for (int i=0; i < PilElt->SizCur; i++)
     {
         //Msh->Tri[PilElt->data1d[i]][0] = -Msh->Tri[PilElt->data1d[i]][0];
         Msh->NbrTri --;
-        printf("Triangle %d is deleted\n", PilElt->data1d[i]);
+        debug_printf("Triangle %d is deleted\n", PilElt->data1d[i]);
     }
-    printf("--------------End Delete the triangles in the cavity-------------\n");
+    debug_printf("--------------End Delete the triangles in the cavity-------------\n");
 
     ////////////// Add new vertices and triangles //////////////
-    printf("--------------Begin Add new vertices and triangles-------------\n");
+    debug_printf("--------------Begin Add new vertices and triangles-------------\n");
     dynamArr *CavTri = dyArr_init(SizPil*3, 1, INT);    // stocker iTri dans la cavité //TODO: Size control
     for (int i=0; i < PilEdg->SizCur; i++)
     {
         Msh->NbrTri ++;
-        printf("---- i = %d -----\n", i);
-        printf("PilElt->data1d[i] = %d\n", PilElt->data1d[i]);
+        debug_printf("---- i = %d -----\n", i);
+        debug_printf("PilElt->data1d[i] = %d\n", PilElt->data1d[i]);
         
         if (i < PilElt->SizCur)
         {
@@ -114,30 +122,32 @@ void Cavity(Mesh *Msh, HashTable *hsh, int iPtIns, int *iTriLocLast)
             hash_add(hsh, Msh->Tri[PilElt->data1d[i]][2], Msh->Tri[PilElt->data1d[i]][0], PilElt->data1d[i], 1, keyMode);
             // update Edge 0
             int id = hash_find_modified(hsh, Msh->Tri[PilElt->data1d[i]][1], Msh->Tri[PilElt->data1d[i]][2], keyMode);
-            if (id == 0) { printf("Note: Cannot find Edge 0 in hsh\n");}
+            if (id == 0) { LOG_INFO("Cannot find Edge 0 in hsh\n");}
             else { hsh->LstObj[id][2] = PilElt->data1d[i];}
 
             dyArr_addElement_INT(CavTri, PilElt->data1d[i], 0);
-            printf("-- CavTri -- : \n");
-            dyArr_print(CavTri);
-            printf("-- end CavTri --\n");
+            debug_printf("-- CavTri -- : \n");
+            #if LOG_LEVEL == 4
+                dyArr_print(CavTri);
+            #endif
+            debug_printf("-- end CavTri --\n");
 
             // find another triangle that shares edge 0
             int Edgid = hash_find_modified(hsh, Msh->Tri[PilElt->data1d[i]][2], Msh->Tri[PilElt->data1d[i]][1], keyMode);
-            printf("Edgid = %d\n", Edgid);
+            debug_printf("Edgid = %d\n", Edgid);
             int neighbor;
             if (Edgid == 0)
-            { printf("Note: Edgid is 0\n"); neighbor = 0;}
+            { LOG_INFO("Edgid is 0\n"); neighbor = 0;}
             else { neighbor = hsh->LstObj[Edgid][2]; }
-            printf("neighbor = %d\n", neighbor);
+            debug_printf("neighbor = %d\n", neighbor);
             if (neighbor != 0)
             {
                 areteCommune(Msh, PilElt->data1d[i], neighbor, &iVerCom1, &iVerCom2, &iVerComLocal1, &iVerComLocal2);
-                printf("iVerCom1, iVerCom2 = %d, %d\n", iVerCom1, iVerCom2);
+                debug_printf("iVerCom1, iVerCom2 = %d, %d\n", iVerCom1, iVerCom2);
                 Msh->TriVoi[neighbor][3-iVerComLocal1-iVerComLocal2] = PilElt->data1d[i];
                 Msh->TriVoi[PilElt->data1d[i]][0] = neighbor;     
             } 
-            else { printf("Note: Neighbor not found\n"); Msh->TriVoi[PilElt->data1d[i]][0] = neighbor; }
+            else { LOG_INFO("Note: Neighbor not found\n"); Msh->TriVoi[PilElt->data1d[i]][0] = neighbor; }
         }
         else
         {
@@ -147,27 +157,29 @@ void Cavity(Mesh *Msh, HashTable *hsh, int iPtIns, int *iTriLocLast)
             hash_add(hsh, Msh->Tri[Msh->NbrTri][0], Msh->Tri[Msh->NbrTri][1], Msh->NbrTri, 2, keyMode);
             hash_add(hsh, Msh->Tri[Msh->NbrTri][2], Msh->Tri[Msh->NbrTri][0], Msh->NbrTri, 1, keyMode);
             int id = hash_find_modified(hsh, Msh->Tri[Msh->NbrTri][1], Msh->Tri[Msh->NbrTri][2], keyMode);
-            if (id == 0) { printf("Note: Cannot find Edge 0 in hsh\n");}
+            if (id == 0) { LOG_INFO("Cannot find Edge 0 in hsh\n");}
             else { hsh->LstObj[id][2] = Msh->NbrTri;}
             dyArr_addElement_INT(CavTri, Msh->NbrTri, 0); 
-            printf("-- CavTri -- : \n");
-            dyArr_print(CavTri);
-            printf("-- end CavTri --\n");
+            debug_printf("-- CavTri -- : \n");
+            #if LOG_LEVEL == 4
+                dyArr_print(CavTri);
+            #endif
+            debug_printf("-- end CavTri --\n");
             int Edgid = hash_find_modified(hsh, Msh->Tri[Msh->NbrTri][2], Msh->Tri[Msh->NbrTri][1], keyMode);
-            printf("Edgid = %d\n", Edgid);
+            debug_printf("Edgid = %d\n", Edgid);
             int neighbor;
             if (Edgid == 0)
-            { printf("Note: Edgid is 0\n"); neighbor = 0;}
+            { LOG_INFO("Edgid is 0\n"); neighbor = 0;}
             else { neighbor = hsh->LstObj[Edgid][2]; }
-            printf("neighbor = %d\n", neighbor);
+            debug_printf("neighbor = %d\n", neighbor);
             if (neighbor != 0)
             {
                 areteCommune(Msh, Msh->NbrTri, neighbor, &iVerCom1, &iVerCom2, &iVerComLocal1, &iVerComLocal2);
-                printf("iVerCom1, iVerCom2 = %d, %d\n", iVerCom1, iVerCom2);
+                debug_printf("iVerCom1, iVerCom2 = %d, %d\n", iVerCom1, iVerCom2);
                 Msh->TriVoi[neighbor][3-iVerComLocal1-iVerComLocal2] = Msh->NbrTri; // update the neighbor of neighbor
                 Msh->TriVoi[Msh->NbrTri][0] = neighbor;  // update one neighbor
             } 
-            else { printf("Note: Neighbor not found\n"); Msh->TriVoi[Msh->NbrTri][0] = neighbor; }
+            else { LOG_INFO("Note: Neighbor not found\n"); Msh->TriVoi[Msh->NbrTri][0] = neighbor; }
         }
         //getchar();
     }
@@ -190,11 +202,13 @@ void Cavity(Mesh *Msh, HashTable *hsh, int iPtIns, int *iTriLocLast)
             Msh->TriVoi[CavTri->data1d[i]][1] = CavTri->data1d[i+1];
         }
     }
-    printf("--------------End Add new vertices and triangles-------------\n");
-    printf("-------------- End iPtIns = %d -------------\n", iPtIns);
+    debug_printf("--------------End Add new vertices and triangles-------------\n");
+    debug_printf("-------------- End iPtIns = %d -------------\n", iPtIns);
 
-    //dyArr_export_to_file(PilElt, "../output/PilElt.txt");
-    //dyArr_export_to_file(PilEdg, "../output/PilEdg.txt");
+    #if LOG_LEVEL == 4
+        dyArr_export_to_file(PilElt, "../output/PilElt.txt");
+        dyArr_export_to_file(PilEdg, "../output/PilEdg.txt");
+    #endif
 
     dyArr_free(PilElt);
     dyArr_free(PilEdg);
@@ -206,7 +220,7 @@ void boucleDetection(Mesh *Msh, int iPt, int iTri, int *mark, int *step)
     int search = 3;
     mark[iTri] = 1;
 
-    printf("Step %d\n", *step); 
+    debug_printf("Step %d\n", *step); 
     (*step)++;
 
     for (int iEdglocal=0; iEdglocal < 3; iEdglocal++){
@@ -227,12 +241,12 @@ void boucleDetection(Mesh *Msh, int iPt, int iTri, int *mark, int *step)
 
 int location(Mesh *Msh, int iTri, double x, double y, int *move)
 {
-    printf("--------------Begin location Step [%d]-------------\n", *move);
+    debug_printf("--------------Begin location Step [%d]-------------\n", *move);
 
     while (1) {
         (*move)++;
-        if (*move > Msh->NbrTri) {    //TODO : Optimize
-            printf("Error: Too many moves\n");
+        if (*move > 2*Msh->NbrTri) {    //TODO : Optimize
+            LOG_ERROR("Too many moves\n");
             return -1;
         }
 
@@ -249,12 +263,12 @@ int location(Mesh *Msh, int iTri, double x, double y, int *move)
             return iTri;
         }
         else if (Msh->TriVoi[iTri][position] == 0) {
-            printf("Error: Reached boundary.\n");
+            LOG_ERROR("Reached boundary.\n");
             return -1;
         }
 
         iTri = Msh->TriVoi[iTri][position];
-        printf("Moved to iTri = %d\n", iTri);
+        debug_printf("Moved to iTri = %d\n", iTri);
     }
 
     return -1;
@@ -290,7 +304,7 @@ int inTriangle(double x0, double y0, double x1, double y1, double x2, double y2,
     }
     else
     {
-        printf("Error: Invalid location\n");
+        LOG_ERROR("Error: Invalid location\n");
         return -2;
     }
 }
@@ -304,7 +318,7 @@ double2d *TestPointSet(int NbrPts, double xmin, double xmax, double ymin, double
     double2d *Pts = (double2d *)malloc((NbrPts + 5) * sizeof(double2d));
 
     if (!Pts) {
-        printf("Error: Memory allocation failed!\n");
+        LOG_ERROR("Memory allocation failed!\n");
         return NULL;
     }
 
@@ -335,7 +349,7 @@ double rCircumcircle(double x1, double y1, double x2, double y2, double x3, doub
     double l2 = distance(x2, y2, x3, y3);
     double l3 = distance(x3, y3, x1, y1);
     double area = triArea(x1, y1, x2, y2, x3, y3);
-    if (area < 0) { printf("Error: area Negative\n");}
+    if (area < 0) { LOG_ERROR("area Negative\n");}
 
     return l1 * l2 * l3 / (4.0 * area); 
 }
@@ -359,7 +373,7 @@ void barycenter(double x0, double y0,
                   double *beta0, double *beta1, double *beta2)
 {
     double aireNonSignee = triArea(x0, y0, x1, y1, x2, y2);
-    if (aireNonSignee < 0) { printf("Error: aireNonSignee Negative\n");}
+    if (aireNonSignee < 0) { LOG_ERROR("aireNonSignee Negative\n");}
     double PP1P2 = aireSignee(x, y, x1, y1, x2, y2);
     double P0PP2 = aireSignee(x0, y0, x, y, x2, y2);
     double P0P1P = aireSignee(x0, y0, x1, y1, x, y);
@@ -442,7 +456,7 @@ void save_test_points_to_file(const char *filename, Mesh *Msh)
 {
     FILE *fp = fopen(filename, "w");
     if (!fp) {
-        printf("Error: Cannot open file %s for writing!\n", filename);
+        LOG_ERROR("Cannot open file %s for writing!\n", filename);
         return;
     }
     for (int i = 1; i <= Msh->NbrVer + 4; i++) {
@@ -461,7 +475,7 @@ void save_triangulation_to_file(const char *filename, Mesh *Msh, HashTable *hsh)
 {
     FILE *fp = fopen(filename, "w");
     if (!fp) {
-        printf("Error: Cannot open file %s for writing!\n", filename);
+        LOG_ERROR("Cannot open file %s for writing!\n", filename);
         return;
     }
     fprintf(fp, "MeshVersionFormatted 2\n\n");
@@ -491,7 +505,7 @@ void addElement(int NbrTri, int SizVector, double3d *Tri, double3d *Voi)
         double3d *tmp2 = (double3d *)realloc(Voi, SizVector * sizeof(double3d));
 
         if (!tmp1 || !tmp2) {
-            printf("Error: Memory reallocation failed!\n");
+            LOG_ERROR("Memory reallocation failed!\n");
             return;
         }
         else {
@@ -521,7 +535,7 @@ int hash_find_modified(HashTable *hsh, int iVer1, int iVer2, const char* keyMode
             (iVer1 > iVer2 ? iVer2 : iVer1) / (double)(iVer1 > iVer2 ? iVer1 : iVer2) ) * 1e9);
   }
   else {
-    printf("Error: Invalid keyMode\n");
+    LOG_ERROR("Invalid keyMode\n");
     return 0;
   }
   //----------------------------------------------------------------

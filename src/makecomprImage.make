@@ -1,7 +1,9 @@
 #
 CC=gcc
+LOG_LEVEL ?= 2
+
 #COPTS= -O2 -Wall
-COPTS = -g -Wall
+COPTS = -g -Wall -DLOG_LEVEL=$(LOG_LEVEL)
 BUILD_DIR=../build
 
 $(shell mkdir -p $(BUILD_DIR))
@@ -41,7 +43,7 @@ $(BUILD_DIR)/triangulation.o : triangulation.c triangulation.h mesh.h
 $(BUILD_DIR)/eigen.o : eigen.c mesh.h 
 	$(CC) -c $(COPTS) -I. eigen.c -o $(BUILD_DIR)/eigen.o
 
-$(BUILD_DIR)/comprImage.o : comprImage.c comprImage.h triangulation.h mesh.h 
+$(BUILD_DIR)/comprImage.o : comprImage.c comprImage.h triangulation.h mesh.h debug.h
 	$(CC) -c $(COPTS) -I. comprImage.c -o $(BUILD_DIR)/comprImage.o
 
 $(BUILD_DIR)/main_comprImage.o : main_comprImage.c comprImage.h

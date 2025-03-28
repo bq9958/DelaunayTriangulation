@@ -1,7 +1,9 @@
 #
+LOG_LEVEL ?= 2
+
 CC=gcc
-COPTS= -O2 -Wall
-#COPTS = -g -Wall
+#COPTS= -O2 -Wall 
+COPTS = -g -Wall -DLOG_LEVEL=$(LOG_LEVEL)
 BUILD_DIR=../build
 
 $(shell mkdir -p $(BUILD_DIR))
@@ -33,7 +35,7 @@ $(BUILD_DIR)/mesh.o : mesh.c mesh.h libmesh6.h
 $(BUILD_DIR)/dynamicArray.o : dynamicArray.c dynamicArray.h mesh.h 
 	$(CC) -c $(COPTS) -I. dynamicArray.c -o $(BUILD_DIR)/dynamicArray.o
 
-$(BUILD_DIR)/triangulation.o : triangulation.c triangulation.h mesh.h
+$(BUILD_DIR)/triangulation.o : triangulation.c triangulation.h mesh.h debug.h
 	$(CC) -c $(COPTS) -I. triangulation.c -o $(BUILD_DIR)/triangulation.o
 
 $(BUILD_DIR)/eigen.o : eigen.c mesh.h 

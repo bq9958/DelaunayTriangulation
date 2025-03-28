@@ -1,19 +1,18 @@
 #include <triangulation.h>
 
 //////////// Global varialbes //////////
-int SizPil = 30;       // cavity Tri Number max
+int SizPil = 100;       // cavity Tri Number max
 const char *keyMode = "sum";
 
 int main(int argc, char *argv[])
 {
     //////// Mesh Definition //////
     Mesh *Msh = msh_init();
-    Msh->NbrVer = 1500;
+    Msh->NbrVer = 2395;
     int SizTri = 4*Msh->NbrVer;   
     Msh->Crd = TestPointSet(Msh->NbrVer, 0, 1, 0, 1);
     Msh->Tri = (int3d *)calloc(SizTri + 1, sizeof(int3d));      // le tableau actif
     Msh->TriVoi = (int3d *)calloc(SizTri + 1, sizeof(int3d));
-    
     
     //////// Hash Table Definition ////////
     HashTable *hsh = hash_init(0.8*SizTri, 3*SizTri+1);
@@ -39,34 +38,31 @@ int main(int argc, char *argv[])
 
     Msh->TriVoi[1][0] = 2; Msh->TriVoi[1][1] = 0; Msh->TriVoi[1][2] = 0;
     Msh->TriVoi[2][0] = 1; Msh->TriVoi[2][1] = 0; Msh->TriVoi[2][2] = 0;
-
-    write_Tri_to_file("../output/Tri.txt", Msh);
-    save_triangulation_to_file("../output/triangulation.mesh", Msh, hsh);
     save_test_points_to_file("../output/test_points.txt", Msh);
 
+    #if LOG_LEVEL == 4
+        write_Tri_to_file("../output/Tri.txt", Msh);
+        save_triangulation_to_file("../output/triangulation.mesh", Msh, hsh);
+    #endif
     
     // ///////// Test session ////////
+    double to, ti;
+    to = GetWallClock();
     for (int iPtIns = 1; iPtIns<=Msh->NbrVer; iPtIns++)
     {
-        // printf("[[--------iPtIns-------]] = %d\n", iPtIns);
-        // printf("Press Enter to continue, or 'q' then Enter to quit: ");
-        // char ch = getchar();
-        // if (ch == 'q' || ch == 'Q') {
-        //     printf("Exiting loop early at iPtIns = %d\n", iPtIns);
-        //     break;
-        // }
-        // while (ch != '\n' && ch != EOF) {
-        //     ch = getchar();
-        // }
+        printf("[[--------iPtIns-------]] = %d\n", iPtIns);
         Cavity(Msh, hsh, iPtIns, &iTriLocLast);
     }
+    ti = GetWallClock();
 
     ////////// Output /////////
-    write_LstObj_to_file("../output/LstObj.txt", hsh);
-    write_Tri_to_file("../output/Tri.txt", Msh);
-    write_TriVoi_to_file("../output/TriVoi.txt", Msh);
+    #if LOG_LEVEL == 4
+        write_LstObj_to_file("../output/LstObj.txt", hsh);
+        write_Tri_to_file("../output/Tri.txt", Msh);
+        write_TriVoi_to_file("../output/TriVoi.txt", Msh);
+    #endif
     save_triangulation_to_file("../output/triangulation.mesh", Msh, hsh);
-    write_TriVoi_to_file("../output/TriVoi.txt", Msh);
+    printf("Time to insert all points: %f (s)\n", ti-to);
 
     // ///////// Free memory ////////
     msh_free(Msh);

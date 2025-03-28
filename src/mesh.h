@@ -16,6 +16,7 @@
 #include <libmesh6.h>
 #include <lplib3.h>
 #include <math.h>
+#include <debug.h>
 
 
 

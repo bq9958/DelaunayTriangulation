@@ -454,14 +454,14 @@ HashTable * hash_init(int SizHead, int NbrMaxObj)
   // allocate Head, LstObj
 	hsh->Head = (int *)calloc(SizHead, sizeof(int));
   if (!hsh->Head) {
-    printf("Error: Failed to allocate hsh->Head\n");
+    LOG_ERROR("Failed to allocate hsh->Head\n");
     free(hsh);
     return NULL;
   }
 
   hsh->LstObj = (int5d *)calloc(NbrMaxObj, sizeof(int5d));
   if (!hsh->LstObj) {
-    printf("Error: Failed to allocate hsh->LstObj\n");
+    LOG_ERROR("Failed to allocate hsh->LstObj\n");
     free(hsh->Head);
     free(hsh);
     return NULL;
@@ -491,7 +491,7 @@ int hash_find(HashTable *hsh, int iVer1, int iVer2, const char* keyMode)
             (iVer1 > iVer2 ? iVer2 : iVer1) / (double)(iVer1 > iVer2 ? iVer1 : iVer2) ) * 1e9);
   }
   else {
-    printf("Error: Invalid keyMode\n");
+    LOG_ERROR("Error: Invalid keyMode\n");
     return 0;
   }
   //----------------------------------------------------------------
@@ -529,7 +529,7 @@ int hash_add(HashTable *hsh, int iVer1, int iVer2, int iTri, int iEdg, const cha
       (iVer1 > iVer2 ? iVer2 : iVer1) / (double)(iVer1 > iVer2 ? iVer1 : iVer2) ) * 1e9);
   }
   else {
-    printf("Error: Invalid keyMode\n");
+    LOG_ERROR("Invalid keyMode\n");
     return 0;
   }
   //------------------------------------------------------------
@@ -564,7 +564,7 @@ int hash_suppr(HashTable *hsh, int iVer1, int iVer2, const char* keyMode)
       (iVer1 > iVer2 ? iVer2 : iVer1) / (double)(iVer1 > iVer2 ? iVer1 : iVer2) ) * 1e9);
   }
   else {
-    printf("Error: Invalid keyMode\n");
+    LOG_ERROR("Invalid keyMode\n");
     return 0;
   }
 
