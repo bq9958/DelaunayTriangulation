@@ -533,6 +533,7 @@ int hash_add(HashTable *hsh, int iVer1, int iVer2, int iTri, int iEdg, const cha
     return 0;
   }
   //------------------------------------------------------------
+  hash_resize(hsh);
 
   int newId = hsh->NbrObj + 1;   // global id starts from 1
   hsh->NbrObj++;
@@ -545,6 +546,19 @@ int hash_add(HashTable *hsh, int iVer1, int iVer2, int iTri, int iEdg, const cha
   hsh->Head[key%(hsh->SizHead)] = newId;
 
 	return 0;
+}
+
+int hash_resize(HashTable *hsh)
+{
+  if (hsh->NbrObj > 0.9*hsh->NbrMaxObj)
+  {
+    int newSize = 2*hsh->NbrMaxObj;
+    int5d *newLstObj = realloc(hsh->LstObj, newSize*sizeof(int5d));
+    hsh->LstObj = newLstObj;
+    hsh->NbrMaxObj = newSize;
+    printf("HashTable LstObj resized to %d\n", newSize);
+  }
+  return 0;
 }
 
 

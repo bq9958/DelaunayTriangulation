@@ -1,4 +1,5 @@
 #include <triangulation.h>
+#define EPSILON  1e-14
 
 extern int SizPil;
 extern const char *keyMode;    
@@ -8,7 +9,7 @@ void Cavity(Mesh *Msh, HashTable *hsh, int iPtIns, int *iTriLocLast)
     debug_printf("--------------Begin Cavity-------------\n");
     ////////// Initialization //////////
     dynamArr *PilElt = dyArr_init(SizPil, 1, INT);
-    dynamArr *PilEdg = dyArr_init(3*SizPil, 2, INT);
+    dynamArr *PilEdg = dyArr_init(SizPil, 2, INT);
     int ptrCur = 0; int ptrNxt = 1;
     int move = 0; int iTri = 0;
     
@@ -56,6 +57,7 @@ void Cavity(Mesh *Msh, HashTable *hsh, int iPtIns, int *iTriLocLast)
                 if (inCircumcircle(x0, y0, x1, y1, x2, y2, x, y)) 
                 {
                     debug_printf("[inCircumcircle]\n");
+                    dyArr_auto_resize(PilElt);
                     PilElt->data1d[ptrNxt] = jTri; PilElt->SizCur ++; ptrNxt ++;
                     debug_printf("ptrNxt = %d\n", ptrNxt);
                     areteCommune(Msh, depile, jTri, &iVerCom1, &iVerCom2, &iVerComLocal1, &iVerComLocal2); // index for jTri
@@ -282,7 +284,7 @@ int inTriangle(double x0, double y0, double x1, double y1, double x2, double y2,
 
     barycenter(x0, y0, x1, y1, x2, y2, x, y, &beta[0], &beta[1], &beta[2]);
     for (int i=0; i<3; i++){
-        if (beta[i] < 0)
+        if (beta[i] < -EPSILON)
         {
             count++;
             choice[count] = i;
@@ -349,7 +351,7 @@ double rCircumcircle(double x1, double y1, double x2, double y2, double x3, doub
     double l2 = distance(x2, y2, x3, y3);
     double l3 = distance(x3, y3, x1, y1);
     double area = triArea(x1, y1, x2, y2, x3, y3);
-    if (area < 0) { LOG_ERROR("area Negative\n");}
+    if (area < -EPSILON) { LOG_ERROR("area Negative\n");}
 
     return l1 * l2 * l3 / (4.0 * area); 
 }
@@ -373,7 +375,7 @@ void barycenter(double x0, double y0,
                   double *beta0, double *beta1, double *beta2)
 {
     double aireNonSignee = triArea(x0, y0, x1, y1, x2, y2);
-    if (aireNonSignee < 0) { LOG_ERROR("aireNonSignee Negative\n");}
+    if (aireNonSignee < -EPSILON) { LOG_ERROR("aireNonSignee Negative\n");}
     double PP1P2 = aireSignee(x, y, x1, y1, x2, y2);
     double P0PP2 = aireSignee(x0, y0, x, y, x2, y2);
     double P0P1P = aireSignee(x0, y0, x1, y1, x, y);

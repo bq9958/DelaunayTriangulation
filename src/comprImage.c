@@ -95,12 +95,12 @@ void TriangulationDelaunay(Mesh *MshDel, HashTable *hshDel,
         MshDel->Crd[i][0] = 0;
         MshDel->Crd[i][1] = 0;
     }
-    save_triangulation_to_file("../output/triangulation.mesh", MshDel, hshDel);
+    
     MshDel->Crd[1][0] = box_xmin; MshDel->Crd[1][1] = box_ymax; // (xmin, ymax)
     MshDel->Crd[2][0] = box_xmin; MshDel->Crd[2][1] = box_ymin; // (xmin, ymin)
     MshDel->Crd[3][0] = box_xmax; MshDel->Crd[3][1] = box_ymin; // (xmax, ymin)
     MshDel->Crd[4][0] = box_xmax; MshDel->Crd[4][1] = box_ymax; // (xmax, ymax)
-
+    save_triangulation_to_file("../output/triangulation.mesh", MshDel, hshDel);
     MshDel->Tri[1][0] = 1; MshDel->Tri[1][1] = 2; MshDel->Tri[1][2] = 4;
     MshDel->Tri[2][0] = 2; MshDel->Tri[2][1] = 3; MshDel->Tri[2][2] = 4;
     MshDel->NbrTri += 2;
@@ -114,7 +114,7 @@ void TriangulationDelaunay(Mesh *MshDel, HashTable *hshDel,
     }
 }
 
-void createPixelSignif(Mesh *MshInit, Mesh *MshDel, int NbrPixelSignif, double *solInit)
+void createPixelSignif(Mesh *MshInit, Mesh *MshDel, int NbrPixelSignif, double *solInit, int NbPtFr)
 {    
     printf("[[ Begin createPixelSignif ]]\n");
     if (NbrPixelSignif > MshInit->NbrVer)
@@ -134,7 +134,14 @@ void createPixelSignif(Mesh *MshInit, Mesh *MshDel, int NbrPixelSignif, double *
     }
     else if (strcmp(pixelSignifMode, "aleatoire") == 0)
     {
-        MshDel->Crd = TestPointSet(NbrPixelSignif, 1, m-1, 1, n-1);
+        double2d *Points = TestPointSet(NbrPixelSignif, 1, m-1, 1, n-1);
+        for (int i=1; i<=NbrPixelSignif; i++)
+        {
+            debug_printf("i + NbPtFr = %d\n", i + NbPtFr);
+            MshDel->Crd[i+NbPtFr][0] = Points[i][0];
+            MshDel->Crd[i+NbPtFr][1] = Points[i][1];
+        }
+        free(Points);
     }
     else if (strcmp(pixelSignifMode, "bloc") == 0) 
     {
@@ -165,8 +172,8 @@ void createPixelSignif(Mesh *MshInit, Mesh *MshDel, int NbrPixelSignif, double *
                     double y = (double)rand() / RAND_MAX ;
                     MshDel->NbrVer++;
                     countTot++;
-                    MshDel->Crd[MshDel->NbrVer][0] = Mprev + x * (M - Mprev - 1 - 1e-5) + 1 + 1e-10;   // avoid exceeding boundary
-                    MshDel->Crd[MshDel->NbrVer][1] = Nprev + y * (N - Nprev - 1 - 1e-5) + 1 + 1e-10;   // avoid exceeding boundary
+                    MshDel->Crd[MshDel->NbrVer + NbPtFr][0] = Mprev + x * (M - Mprev - 1 - 1e-5) + 1 + 1e-10;   // avoid exceeding boundary
+                    MshDel->Crd[MshDel->NbrVer + NbPtFr][1] = Nprev + y * (N - Nprev - 1 - 1e-5) + 1 + 1e-10;   // avoid exceeding boundary
                 }     
                 if (countTot >= NbrPixelSignif)
                 break;           
@@ -177,4 +184,44 @@ void createPixelSignif(Mesh *MshInit, Mesh *MshDel, int NbrPixelSignif, double *
         printf("Total randomly selected points: %d\n", MshDel->NbrVer);
     }
     else{ LOG_ERROR("Unable to create pixelSignif"); }
+}
+
+void FrPoints(Mesh *MshDel, double h)
+{
+    int nx = (m-1) / h - 1;
+    int ny = (n-1) / h - 1;
+    int count = 1; 
+
+    MshDel->Crd[count][0] = 1; MshDel->Crd[count][1] = n;    // upper left
+    count ++;
+    for (int i=1; i<=nx; i++)   // up
+    {
+        MshDel->Crd[count][0] = 1 + i*h; MshDel->Crd[count][1] = n; 
+        count ++;
+    }
+    
+    MshDel->Crd[count][0] = m; MshDel->Crd[count][1] = n;    // upper right
+    count ++;
+    for (int i=1; i<=ny; i++)   // right
+    {
+        MshDel->Crd[count][0] = m; MshDel->Crd[count][1] = n - i*h; 
+        count ++;
+    }
+    
+    MshDel->Crd[count][0] = m; MshDel->Crd[count][1] = 1;    // bottom right
+    count ++;
+    for (int i=1; i<=nx; i++)   // bottom
+    {
+        MshDel->Crd[count][0] = m - i*h; MshDel->Crd[count][1] = 1; 
+        count ++;
+    }
+    
+    MshDel->Crd[count][0] = 1; MshDel->Crd[count][1] = 1;    // bottom left
+    count ++;
+    for (int i=1; i<=ny; i++)   // left
+    {
+        MshDel->Crd[count][0] = 1; MshDel->Crd[count][1] = 1 + i*h; 
+        count ++;
+    }
+    
 }

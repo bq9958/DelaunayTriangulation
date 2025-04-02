@@ -107,6 +107,7 @@ HashTable * hash_init(int SizHead, int NbrMaxObj);          // alloc and set hta
 int hash_find(HashTable *hsh, int iVer1, int iVer2, const char* keyMode);            // return the id found (in LstObj ), if 0 the object is not in the list 
 int hash_add (HashTable *hsh, int iVer1, int iVer2, int iTri, int iEdg, const char* keyMode);  // ==> add this entry in the hash tab 
 int hash_suppr(HashTable *hsh, int iVer1, int iVer2, const char* keyMode);  // ==> suppress this entry in the hash tab 
+int hash_resize(HashTable *hsh);
 void hash_free(HashTable *hsh);
 
 //--- Tool functions
