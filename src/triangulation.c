@@ -1,5 +1,5 @@
 #include <triangulation.h>
-#define EPSILON  1e-14
+#define EPSILON  0.0
 
 extern int SizPil;
 extern const char *keyMode;    
@@ -473,7 +473,7 @@ void save_test_points_to_file(const char *filename, Mesh *Msh)
     printf("[Ouput File] test points written to %s\n", filename);
 }
 
-void save_triangulation_to_file(const char *filename, Mesh *Msh, HashTable *hsh) 
+void save_triangulation_to_file(const char *filename, Mesh *Msh, int NbrPtFr) 
 {
     FILE *fp = fopen(filename, "w");
     if (!fp) {
@@ -493,6 +493,23 @@ void save_triangulation_to_file(const char *filename, Mesh *Msh, HashTable *hsh)
     for (int i = 1; i <= Msh->NbrTri; i++) {
         fprintf(fp, "%d %d %d %d\n", Msh->Tri[i][0], Msh->Tri[i][1], Msh->Tri[i][2], 1);
     }
+
+    ////////// write Edges //////////
+    if (NbrPtFr > 0)
+    {
+        fprintf(fp, "\n\nEdges\n");
+        fprintf(fp, "%d\n", NbrPtFr+4);    // plus 4 bounding box edges 
+        fprintf(fp, "1 2 1\n");
+        fprintf(fp, "2 3 1\n");
+        fprintf(fp, "3 4 1\n");
+        fprintf(fp, "4 1 1\n");
+        for (int i=1; i<=NbrPtFr-1; i++)
+        {
+            fprintf(fp, "%d %d 2\n", 4+i, 5+i);
+        }
+        fprintf(fp, "%d %d 2\n", 4 + NbrPtFr, 5);
+    }
+
     fprintf(fp, "End\n");
     fclose(fp);
     printf("[Ouput File] triangulation written to %s\n", filename);

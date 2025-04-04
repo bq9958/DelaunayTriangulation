@@ -23,7 +23,7 @@ void barycenter(double x0, double y0,
     double *beta0, double *beta1, double *beta2);
 double aireSignee(double x0, double y0, double x1, double y1, double x2, double y2);
 double2d *TestPointSet(int NbrPts, double xmin, double xmax, double ymin, double ymax);
-void save_triangulation_to_file(const char *filename, Mesh *Msh, HashTable *hsh);
+void save_triangulation_to_file(const char *filename, Mesh *Msh, int NbrPtFr);
 int inList(int element, int *list, int SizList);
 void print_pile_to_file(int *pile);
 void addElement(int NbrTri, int SizVector, double3d *Tri, double3d *Voi);

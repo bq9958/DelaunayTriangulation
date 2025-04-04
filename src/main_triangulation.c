@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
 {
     //////// Mesh Definition //////
     Mesh *Msh = msh_init();
-    Msh->NbrVer = 1000;
+    Msh->NbrVer = 200000;
     int SizTri = 4*Msh->NbrVer;   
     Msh->Crd = TestPointSet(Msh->NbrVer, 0, 1, 0, 1);
     Msh->Tri = (int3d *)calloc(SizTri + 1, sizeof(int3d));      // le tableau actif
@@ -38,11 +38,11 @@ int main(int argc, char *argv[])
 
     Msh->TriVoi[1][0] = 2; Msh->TriVoi[1][1] = 0; Msh->TriVoi[1][2] = 0;
     Msh->TriVoi[2][0] = 1; Msh->TriVoi[2][1] = 0; Msh->TriVoi[2][2] = 0;
-    save_test_points_to_file("../output/test_points.txt", Msh);
+    //save_test_points_to_file("../output/test_points.txt", Msh);
 
     #if LOG_LEVEL == 4
         write_Tri_to_file("../output/Tri.txt", Msh);
-        save_triangulation_to_file("../output/triangulation.mesh", Msh, hsh);
+        save_triangulation_to_file("../output/triangulation.mesh", Msh, 0);  // no NbrPtFr
     #endif
     
     // ///////// Test session ////////
@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
         write_Tri_to_file("../output/Tri.txt", Msh);
         write_TriVoi_to_file("../output/TriVoi.txt", Msh);
     #endif
-    save_triangulation_to_file("../output/triangulation.mesh", Msh, hsh);
+    save_triangulation_to_file("../output/triangulation.mesh", Msh, 0);  // no NbrPtFr
     printf("Time to insert all points: %f (s)\n", ti-to);
 
     // ///////// Free memory ////////

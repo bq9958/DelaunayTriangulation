@@ -298,7 +298,7 @@ int dyArr_auto_resize(dynamArr* dyArr)
         } else {
             return -2;
         }
-        printf("dyArr resized to %d\n", newSize);
+        debug_printf("dyArr resized to %d\n", newSize);
     }
 
     else if (dyArr->dim == 2) {
@@ -315,7 +315,7 @@ int dyArr_auto_resize(dynamArr* dyArr)
         } else {
             return -2; 
         }
-        printf("dyArr resized to %d\n", newSize);
+        debug_printf("dyArr resized to %d\n", newSize);
     }
 
     dyArr->MaxSiz = newSize;
