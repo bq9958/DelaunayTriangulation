@@ -1,12 +1,12 @@
 #include <comprImage.h>
 
 /////////// Global variables //////////
-const char *pixelSignifMode = "regulier";   // "regulier" ou "aleatoire" ou "bloc"
+const char *pixelSignifMode = "bloc";   // "regulier" ou "aleatoire" ou "bloc"
 int SizPil = 100;       // cavity Tri Number max  //TODO Size Control
 const char *keyMode = "sum";
 const int m = 289;      // pixel width (58/289)    //! Update domain
 const int n = 440;      // pixel height (88/440)  //! Update domain
-const int incrementRegulier = 4;   // increment for regular pixel significatif
+const int incrementRegulier = 9;   // increment for regular pixel significatif
 
 
 int main(int argc, char *argv[])
@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
     printf("  Triangles  %10d \n", MshInit->NbrTri);
 
     /////////// Define Mesh Delaunay ////////////
-    int NbrPixelSignif = 15000;      //! Update here, NbrPixelSignif < MshInit->NbrVer
+    int NbrPixelSignif = 10000;      //! Update here, NbrPixelSignif < MshInit->NbrVer
     double h_fr = 1; int nx = m / h_fr; int ny = n /h_fr;
     printf("  nx, ny = %d, %d\n", nx, ny);
     int NbrPtFr = 2*(nx + ny) - 4;
