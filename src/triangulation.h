@@ -11,7 +11,6 @@ typedef struct {
 
 void Cavity(Mesh *Msh, HashTable *hsh, int iPtIns, int *iTriLocLast);
 int location(Mesh *Msh, int iTri, double x, double y, int *move);
-void boucleDetection(Mesh *Msh, int iPt, int iTri, int *mark, int *step);
 int inTriangle(double x0, double y0, double x1, double y1, double x2, double y2, double x, double y);
 int inCircumcircle(double x1, double y1, double x2, double y2, double x3, double y3, double x, double y);
 double rCircumcircle(double x1, double y1, double x2, double y2, double x3, double y3);

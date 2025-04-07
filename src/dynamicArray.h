@@ -25,3 +25,4 @@ void dyArr_print(dynamArr *dyArr);
 dynamArr *dyArr_sort_circle(dynamArr *list_to_sort);
 void dyArr_free(dynamArr *dyArr);
 int dyArr_auto_resize(dynamArr* dyArr);
+int dyInList(int element, dynamArr *dyArr);

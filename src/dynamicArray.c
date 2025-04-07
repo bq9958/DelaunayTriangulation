@@ -263,6 +263,16 @@ dynamArr *dyArr_sort_circle(dynamArr *list_to_sort)    //! only for INT
     }
 }
 
+int dyInList(int element, dynamArr *dyArr)    //! only for 1d INT
+{
+    for (int i=0; i < dyArr->SizCur; i++)
+    {
+        if (element == dyArr->data1d[i])
+            return 1;
+    }
+    return 0;
+}
+
 void dyArr_free(dynamArr *dyArr) {
     if (!dyArr) return;
 

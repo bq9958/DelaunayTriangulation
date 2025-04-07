@@ -217,29 +217,6 @@ void Cavity(Mesh *Msh, HashTable *hsh, int iPtIns, int *iTriLocLast)
     dyArr_free(CavTri);
 }
 
-void boucleDetection(Mesh *Msh, int iPt, int iTri, int *mark, int *step)
-{
-    int search = 3;
-    mark[iTri] = 1;
-
-    debug_printf("Step %d\n", *step); 
-    (*step)++;
-
-    for (int iEdglocal=0; iEdglocal < 3; iEdglocal++){
-        int neighbor = Msh->TriVoi[iTri][iEdglocal];
-        if (mark[neighbor] == 0 && (Msh->Tri[neighbor][0] == iPt || Msh->Tri[neighbor][1] == iPt 
-            || Msh->Tri[neighbor][2] == iPt)){
-            mark[neighbor] = 1;     // belongs to boucle
-            boucleDetection(Msh, iPt, neighbor, mark, step);
-        }
-        else{
-            if (mark[neighbor] != 1)
-                mark[neighbor] = -1;    // not belong to boucle
-            search--;
-        }
-        if (search == 0) {return;}
-    }
-}
 
 int location(Mesh *Msh, int iTri, double x, double y, int *move)
 {
