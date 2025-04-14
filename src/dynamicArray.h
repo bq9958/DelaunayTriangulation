@@ -12,7 +12,7 @@ typedef struct {
     int SizCur;     
     int MaxSiz;  
     DataType type;
-    int dim;        
+    int dim;  
 } dynamArr;
 
 dynamArr *dyArr_init(int MaxSiz, int dim, DataType type);

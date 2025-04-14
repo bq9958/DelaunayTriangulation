@@ -30,7 +30,7 @@ double computePSNR(Mesh *MshInit, Mesh *MshIntern, double *solInit, double *solI
         move = 0;
         u = solInit[i];
         x = MshInit->Crd[i][0]; y = MshInit->Crd[i][1];
-        iTri = rand() % MshIntern->NbrTri + 4;     // avoid the bounding box
+        iTri = rand() % MshIntern->NbrTri;
         iTriLoc = location(MshIntern, iTri, x, y, &move);
         
         debug_printf("iTri = %d, iTriLoc = %d\n", iTri, iTriLoc);

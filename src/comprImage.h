@@ -6,7 +6,7 @@ double *readVerSolution(const char *filename, int num_values);
 void TriangulationDelaunay(Mesh *MshDel, HashTable *hshDel, int NbrPtInsMin, int NbrPtInsMax);
 void interpolateSolution(Mesh *MshInit, Mesh *MshDel, double *solInit, double *solInterp, int NbrPtFr) ;
 void solFr(double *solInit, double *solInterp, double *solQC) ;      // only for h = 1
-double computePSNR(Mesh *MshInit, Mesh *MshIntern, double *solInit, double *solInterp, double *solPSNR);
+double computePSNR(Mesh *MshInit, Mesh *MshIntern, double *solInit, double *solInterp, double *solQC);
 void FrPoints(Mesh *MshDel, double h);
 int *find_connex_components_modif(Mesh *Msh);
 void selectInternalTri(Mesh *MshIntern, Mesh *MshDel, int *color);

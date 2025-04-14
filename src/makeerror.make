@@ -9,18 +9,22 @@ BUILD_DIR=../build
 $(shell mkdir -p $(BUILD_DIR))
 
 adaptation: $(BUILD_DIR)/mesh.o $(BUILD_DIR)/triangulation.o \
-               $(BUILD_DIR)/main_adaptation.o \
+               $(BUILD_DIR)/main_error.o \
+			   $(BUILD_DIR)/error.o \
 			   $(BUILD_DIR)/adaptation.o \
                $(BUILD_DIR)/eigen.o \
+			   $(BUILD_DIR)/comprImage.o \
                $(BUILD_DIR)/lplib3.o \
                $(BUILD_DIR)/libmesh6.o \
                $(BUILD_DIR)/dynamicArray.o
-	$(CC) $(COPTS) -o $(BUILD_DIR)/adaptation \
+	$(CC) $(COPTS) -o $(BUILD_DIR)/error \
 	    $(BUILD_DIR)/mesh.o \
 	    $(BUILD_DIR)/triangulation.o \
 		$(BUILD_DIR)/adaptation.o \
-	    $(BUILD_DIR)/main_adaptation.o \
+	    $(BUILD_DIR)/main_error.o \
+		$(BUILD_DIR)/error.o \
 	    $(BUILD_DIR)/eigen.o \
+		$(BUILD_DIR)/comprImage.o \
 	    $(BUILD_DIR)/libmesh6.o \
 	    $(BUILD_DIR)/lplib3.o \
 	    $(BUILD_DIR)/dynamicArray.o -lpthread -lm
@@ -46,8 +50,14 @@ $(BUILD_DIR)/eigen.o : eigen.c eigen.h mesh.h
 $(BUILD_DIR)/adaptation.o : adaptation.c adaptation.h
 	$(CC) -c $(COPTS) -I. adaptation.c -o $(BUILD_DIR)/adaptation.o
 
-$(BUILD_DIR)/main_adaptation.o : main_adaptation.c adaptation.h
-	$(CC) -c $(COPTS) -I. main_adaptation.c -o $(BUILD_DIR)/main_adaptation.o  
+$(BUILD_DIR)/comprImage.o : comprImage.c comprImage.h triangulation.h mesh.h debug.h
+	$(CC) -c $(COPTS) -I. comprImage.c -o $(BUILD_DIR)/comprImage.o
+
+$(BUILD_DIR)/error.o : error.c error.h
+	$(CC) -c $(COPTS) -I. error.c -o $(BUILD_DIR)/error.o
+
+$(BUILD_DIR)/main_error.o : main_error.c error.h
+	$(CC) -c $(COPTS) -I. main_error.c -o $(BUILD_DIR)/main_error.o  
 
 clean :
 	-rm -rf $(BUILD_DIR)
