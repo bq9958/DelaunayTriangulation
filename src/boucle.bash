@@ -1,7 +1,5 @@
 #!/bin/bash
 
-THRESHOLD=0.01
-
 # compilation
 make -f makeadaptation.make
 make -f makeerror.make
@@ -15,7 +13,6 @@ cp ../data/joconde.lowres.mesh ../dir/maillage.mesh
 cp ../data/joconde.lowres.sol ../dir/maillage.niveaugris.sol
 
 # Initialization
-error=1.0
 iteration=0
 MAX_ITER=40
 
@@ -26,7 +23,7 @@ echo "iteration,C" > ../output/complexity_log.dat
 echo "iteration,NbrVer" > ../output/NbrVer_log.dat
 echo "iteration,PSNR,delta" > ../output/PSNR_log.dat
 
-while (( $(echo "$error > $THRESHOLD" | bc -l) )); do
+while true; do
     echo ">>> Iteration $iteration"
 
     # run main_adaptation, output: metric.sol
@@ -78,7 +75,7 @@ while (( $(echo "$error > $THRESHOLD" | bc -l) )); do
     fi
 done
 
-echo "Adaptation finished. Final error: $error"
+echo "Adaptation finished."
 
 # Visualization
 ./../vizir4/vizir4.exe -in ../dir/maillage.adapte.mesh -sol ../dir/maillage.niveaugris.itp.sol

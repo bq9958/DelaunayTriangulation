@@ -10,7 +10,6 @@ $(shell mkdir -p $(BUILD_DIR))
 
 adaptation: $(BUILD_DIR)/mesh.o $(BUILD_DIR)/triangulation.o \
                $(BUILD_DIR)/main_error.o \
-			   $(BUILD_DIR)/error.o \
 			   $(BUILD_DIR)/adaptation.o \
                $(BUILD_DIR)/eigen.o \
 			   $(BUILD_DIR)/comprImage.o \
@@ -22,7 +21,6 @@ adaptation: $(BUILD_DIR)/mesh.o $(BUILD_DIR)/triangulation.o \
 	    $(BUILD_DIR)/triangulation.o \
 		$(BUILD_DIR)/adaptation.o \
 	    $(BUILD_DIR)/main_error.o \
-		$(BUILD_DIR)/error.o \
 	    $(BUILD_DIR)/eigen.o \
 		$(BUILD_DIR)/comprImage.o \
 	    $(BUILD_DIR)/libmesh6.o \
@@ -53,10 +51,7 @@ $(BUILD_DIR)/adaptation.o : adaptation.c adaptation.h
 $(BUILD_DIR)/comprImage.o : comprImage.c comprImage.h triangulation.h mesh.h debug.h
 	$(CC) -c $(COPTS) -I. comprImage.c -o $(BUILD_DIR)/comprImage.o
 
-$(BUILD_DIR)/error.o : error.c error.h
-	$(CC) -c $(COPTS) -I. error.c -o $(BUILD_DIR)/error.o
-
-$(BUILD_DIR)/main_error.o : main_error.c error.h
+$(BUILD_DIR)/main_error.o : main_error.c adaptation.h
 	$(CC) -c $(COPTS) -I. main_error.c -o $(BUILD_DIR)/main_error.o  
 
 clean :
